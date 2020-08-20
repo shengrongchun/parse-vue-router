@@ -20,9 +20,21 @@ export default {
       default: 'click'
     }
   },
-  render (h) {
-    const data =  {
-      attrs: {href: this.to} 
+  render(h) {
+    const router = this.$router
+    const current = this.$route
+    const { location } = router.resolve(
+      this.to,
+      current,
+      this.append
+    )
+
+    const data = {
+      on: {
+        click: () => {
+          router.push(location)
+        }
+      }
     }
     return h(this.tag, data, this.$slots.default)
   }

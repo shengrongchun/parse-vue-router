@@ -1,8 +1,9 @@
-const Foo = { template: '<div>foo</div>' }
-const Bar = { template: '<div>bar</div>' }
+import Foo from './components/Foo'
+import Bar from './components/Bar'
 
 export default {
-  routes: [ 
+  routes: [
+    // { path: '/', component: Foo },
     { path: '/foo', component: Foo },
     { path: '/bar', component: Bar }
   ]
