@@ -13,11 +13,14 @@ export default class VueRouter {
     //
     this.history = new History(this, options.base)
   }
+  //匹配返回的路由
   match(location, current) {
     return this.matcher.match(location, current)
   }
   //初始化方法
   init(app) {//app vue根实例
+    //如果多个vue实例公用一个vueRouter对象，就需要通过apps收集这些vue实例
+    //然后改变实例的当前路由： this.apps.forEach((app) => { app._route = route})
     this.apps.push(app)
     if (this.app) return
     this.app = app

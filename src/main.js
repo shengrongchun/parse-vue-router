@@ -7,9 +7,11 @@ Vue.config.productionTip = false
 
 //
 Vue.use(VueRouter)
+//VueRouter 是Class
 const router = new VueRouter(route)
 
 new Vue({
   router,
   render: h => h(App),
 }).$mount('#app')
+

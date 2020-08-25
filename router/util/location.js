@@ -59,7 +59,7 @@ export function normalizeLocation(
   }
 
   return {
-    _normalized: true,
+    _normalized: true, //标准化后的标识
     path,
     query,
     hash

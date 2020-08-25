@@ -1,6 +1,6 @@
 
 import { inBrowser } from '../util/dom'
-import { START } from '../util/route'
+//import { START } from '../util/route'
 
 export class History {
   constructor(router, base) {
@@ -10,7 +10,7 @@ export class History {
     this.base = normalizeBase(base)
     // start with a route object that stands for "nowhere"
     //当前路由对象 但一开始的当前路由应该空路由
-    this.current = START //$route
+    this.current = {} //$route
     console.log('初始化当前路由', this.current)
   }
   getCurrentLocation() {//获取当前location
