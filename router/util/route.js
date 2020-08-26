@@ -1,21 +1,22 @@
 
 import { stringifyQuery } from './query'
 
+import Foo from '../../src/components/Foo.vue'
+import Bar from '../../src/components/Bar.vue'
+
 const trailingSlashRE = /\/?$/
 
-export function createRoute (
+export function createRoute(
   record,
   location,
   redirectedFrom,
-  router
 ) {
-  const stringifyQuery = router && router.options.stringifyQuery
 
   let query = location.query || {}
-  try {
+  try {//?
     query = clone(query)
-  // eslint-disable-next-line no-empty
-  } catch (e) {}
+    // eslint-disable-next-line no-empty
+  } catch (e) { }
 
   const route = { //创建当前路由对象--> this.$route
     name: location.name || (record && record.name),//当前路由的名称，如果有的话
@@ -28,17 +29,22 @@ export function createRoute (
     //一个 key/value 对象，包含了动态片段和全匹配片段，如果没有路由参数，就是一个空对象
     params: location.params || {},
     //完成解析后的 URL，包含查询参数和 hash 的完整路径
-    fullPath: getFullPath(location, stringifyQuery),
+    fullPath: getFullPath(location),
     //一个数组，包含当前路由的所有嵌套路径片段的路由记录
-    matched: record ? formatMatch(record) : []
+    matched: record ? formatMatch(record) : [{
+      components: {
+        foo: Foo,
+        bar: Bar
+      }
+    }]
   }
   if (redirectedFrom) {//如果存在重定向，即为重定向来源的路由的名字
-    route.redirectedFrom = getFullPath(redirectedFrom, stringifyQuery)
+    route.redirectedFrom = getFullPath(redirectedFrom)
   }
   return Object.freeze(route)//冻结对象，不让其修改
 }
 
-function clone (value) {
+function clone(value) {
   if (Array.isArray(value)) {
     return value.map(clone)
   } else if (value && typeof value === 'object') {
@@ -57,7 +63,7 @@ export const START = createRoute(null, {
   path: '/'
 })
 
-function formatMatch (record) {
+function formatMatch(record) {
   const res = []
   while (record) {
     res.unshift(record)
@@ -66,7 +72,7 @@ function formatMatch (record) {
   return res
 }
 
-function getFullPath (
+function getFullPath(
   { path, query = {}, hash = '' },
   _stringifyQuery
 ) {
@@ -74,7 +80,7 @@ function getFullPath (
   return (path || '/') + stringify(query) + hash
 }
 
-export function isSameRoute (a, b) {
+export function isSameRoute(a, b) {
   if (b === START) {
     return a === b
   } else if (!b) {
@@ -97,7 +103,7 @@ export function isSameRoute (a, b) {
   }
 }
 
-function isObjectEqual (a = {}, b = {}) {
+function isObjectEqual(a = {}, b = {}) {
   // handle null value #1566
   if (!a || !b) return a === b
   const aKeys = Object.keys(a)
@@ -116,7 +122,7 @@ function isObjectEqual (a = {}, b = {}) {
   })
 }
 
-export function isIncludedRoute (current, target) {
+export function isIncludedRoute(current, target) {
   return (
     current.path.replace(trailingSlashRE, '/').indexOf(
       target.path.replace(trailingSlashRE, '/')
@@ -126,7 +132,7 @@ export function isIncludedRoute (current, target) {
   )
 }
 
-function queryIncludes (current, target) {
+function queryIncludes(current, target) {
   for (const key in target) {
     if (!(key in current)) {
       return false

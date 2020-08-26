@@ -10,6 +10,6 @@
       <router-link to="/bar">Go to Bar</router-link>
     </p>
     <!-- 路由匹配到的组件将渲染在这里 -->
-    <router-view></router-view>
+    <router-view name="bar"></router-view>
   </div>
 </template>

@@ -8,30 +8,18 @@ export class History {
     this.router = router //$router
     //基本路径
     this.base = normalizeBase(base)
-    // start with a route object that stands for "nowhere"
-    //当前路由对象 但一开始的当前路由应该空路由
-    this.current = {} //$route
-    console.log('初始化当前路由', this.current)
+    //当前路由
+    this.current = {}
   }
-  getCurrentLocation() {//获取当前location
-    return getLocation(this.base)
-  }
-
-  transitionTo(location) {
+  //创建匹配的路由，然后改变当前路由
+  transitionTo() {
     //新匹配创建的route
-    const route = this.router.match(location, this.current)
+    const route = this.router.match()
     this.updateRoute(route)
   }
+  //改变当前路由
   updateRoute(route) {
     this.current = route
-    console.log('路由改变', this.cb)
-    this.cb && this.cb(route) // 去改变 实例的_route
-  }
-  listen(cb) {
-    this.cb = cb
-  }
-  push(location) {
-    this.transitionTo(location)
   }
 
 }
@@ -44,8 +32,9 @@ export function getLocation(base) {
   return (path || '/') + window.location.search + window.location.hash
 }
 
+//标准化base
 function normalizeBase(base) {
-  if (!base) {
+  if (!base) {//没有base
     if (inBrowser) {
       // respect <base> tag
       const baseEl = document.querySelector('base')
@@ -61,6 +50,6 @@ function normalizeBase(base) {
   if (base.charAt(0) !== '/') {
     base = '/' + base
   }
-  // remove trailing slash
+  // remove trailing slash // --> /
   return base.replace(/\/$/, '')
 }
