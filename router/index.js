@@ -7,6 +7,7 @@ import { normalizeLocation } from './util/location'
 export default class VueRouter {
   constructor(options) {
     this.app = null //根实例
+    this.apps = [] //存放多个根实例
     this.options = options
     this.matcher = createMatcher(options.routes || [], this)
     //
@@ -17,6 +18,7 @@ export default class VueRouter {
   }
   //初始化方法
   init(app) {//app vue根实例
+    this.apps.push(app)
     if (this.app) return
     this.app = app
     const history = this.history
@@ -24,9 +26,12 @@ export default class VueRouter {
     history.transitionTo(history.getCurrentLocation())
     //
     history.listen(route => {
-      app._route = route
+      this.apps.forEach((app) => {
+        console.log('_route 值改变了', route)
+        app._route = route
+      })
       //不刷新更改浏览器url
-      window.history.pushState(null, null, route.path)
+      window.history.pushState(null, null, route.fullPath)
     })
   }
   //router-link 组件中用到，获取location-->push-->transitionTo

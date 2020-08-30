@@ -49,14 +49,14 @@ const pathMap = {
     props: {},
     redirect: undefined,
     regex: /^\/bar(?:\/(?=$))?$/i
-  }
+  },
 }
 const nameMap = { home: pathMap[''], foo: pathMap['/foo'], bar: pathMap['/bar'] }
 //通过当前location创建当前路由
 export function createMatcher() {
 
   function match(
-    raw,
+    raw, // 1: 字符串 2: {path: '/……', query: {}} 3: {name: xxx, params: {}}
   ) {
     const location = normalizeLocation(raw)
     const { name } = location

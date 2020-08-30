@@ -17,7 +17,7 @@ export class History {
     return getLocation(this.base)
   }
   transitionTo(location) {
-    //新匹配创建的route
+    //通过location来创建route
     const route = this.router.match(location)
     if (isSameRoute(route, this.current)) {//相同route
       return;
@@ -39,10 +39,12 @@ export class History {
 }
 
 export function getLocation(base) {//获取path
+  //返回当前url的路径部分
   let path = decodeURI(window.location.pathname)
   if (base && path.toLowerCase().indexOf(base.toLowerCase()) === 0) {
-    path = path.slice(base.length)
+    path = path.slice(base.length) // path中base去掉
   }
+  //？开始的查询部分和hash部分
   return (path || '/') + window.location.search + window.location.hash
 }
 
