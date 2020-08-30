@@ -1,10 +1,11 @@
+import Home from './components/Home'
 import Foo from './components/Foo'
 import Bar from './components/Bar'
 
 export default {
   routes: [
-    // { path: '/', component: Foo },
-    { path: '/foo', component: Foo },
-    { path: '/bar', component: Bar }
+    { path: '/', name: 'home', component: Home },
+    { path: '/foo', name: 'foo', component: Foo },
+    { path: '/bar', name: 'bar', component: Bar }
   ]
 }

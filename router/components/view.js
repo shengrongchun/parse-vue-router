@@ -9,14 +9,13 @@ export default {
     },
   },
   render(_, { props, children, parent, data }) {
-
     //
     const h = parent.$createElement
     const name = props.name
     const route = parent.$route
-    console.log('RouteView组件', route);
-    const matched = route.matched[0]
+    const matched = route.matched
     const component = matched && matched.components[name]
+    console.log('RouteView组件', route);
     if (!matched || !component) {
       return h()
     }

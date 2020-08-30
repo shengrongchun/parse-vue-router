@@ -13,18 +13,17 @@ export class History {
     this.current = START //$route
     console.log('初始化当前路由', this.current)
   }
-  getCurrentLocation() {//获取当前location
+  getCurrentLocation() {//获取当前url path
     return getLocation(this.base)
   }
-
   transitionTo(location) {
     //新匹配创建的route
-    const route = this.router.match(location, this.current)
+    const route = this.router.match(location)
     this.updateRoute(route)
+    console.log('路由改变', route)
   }
   updateRoute(route) {
     this.current = route
-    console.log('路由改变', this.cb)
     this.cb && this.cb(route) // 去改变 实例的_route
   }
   listen(cb) {
@@ -36,7 +35,7 @@ export class History {
 
 }
 
-export function getLocation(base) {
+export function getLocation(base) {//获取path
   let path = decodeURI(window.location.pathname)
   if (base && path.toLowerCase().indexOf(base.toLowerCase()) === 0) {
     path = path.slice(base.length)
