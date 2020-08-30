@@ -1,3 +1,4 @@
+const trailingSlashRE = /\/?$/
 
 export function createRoute(
   record,
@@ -27,3 +28,22 @@ export function createRoute(
 export const START = createRoute(null, {
   path: '/'
 })
+//是否相同route
+export function isSameRoute(a, b) {
+  if (b === START) {
+    return a === b
+  } else if (!b) {
+    return false
+  } else if (a.path && b.path) {
+    return (
+      a.path.replace(trailingSlashRE, '') === b.path.replace(trailingSlashRE, '')
+    )
+  } else if (a.name && b.name) {
+    return (
+      a.name === b.name &&
+      a.hash === b.hash
+    )
+  } else {
+    return false
+  }
+}

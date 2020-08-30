@@ -1,6 +1,6 @@
 
 import { inBrowser } from '../util/dom'
-import { START } from '../util/route'
+import { START, isSameRoute } from '../util/route'
 
 export class History {
   constructor(router, base) {
@@ -19,6 +19,9 @@ export class History {
   transitionTo(location) {
     //新匹配创建的route
     const route = this.router.match(location)
+    if (isSameRoute(route, this.current)) {//相同route
+      return;
+    }
     this.updateRoute(route)
     console.log('路由改变', route)
   }
