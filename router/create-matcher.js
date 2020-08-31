@@ -1,3 +1,4 @@
+import { warn } from './util/warn'
 import { createRoute } from './util/route'
 import { normalizeLocation } from './util/location'
 //
@@ -53,17 +54,43 @@ const pathMap = {
 }
 const nameMap = { home: pathMap[''], foo: pathMap['/foo'], bar: pathMap['/bar'] }
 //通过当前location创建当前路由
-export function createMatcher() {
+export function createMatcher(
+  routes,
+  router,
+  redirectedFrom
+) {
 
   function match(
     raw, // 1: 字符串 2: {path: '/……', query: {}} 3: {name: xxx, params: {}}
+    currentRoute
   ) {
-    const location = normalizeLocation(raw)
+    const location = normalizeLocation(raw, currentRoute, false, router) // false--> append
     const { name } = location
     if (name) {
       const record = nameMap[name]
+      if (process.env.NODE_ENV !== 'production') {
+        warn(record, `Route with name '${name}' does not exist`)
+      }
+      if (!record) return _createRoute(null, location)
+      //通过正则来收集path应当的参数 如： /a:username
+      const paramNames = record.regex.keys
+        .filter(key => !key.optional)
+        .map(key => key.name)
 
-      return _createRoute(record, location)
+      if (typeof location.params !== 'object') {
+        location.params = {}
+      }
+      // 把currentRoute的符合规则的参数放入location.params中
+      if (currentRoute && typeof currentRoute.params === 'object') {
+        for (const key in currentRoute.params) {
+          if (!(key in location.params) && paramNames.indexOf(key) > -1) {
+            location.params[key] = currentRoute.params[key]
+          }
+        }
+      }
+      // 把params填充到path
+      location.path = fillParams(record.path, location.params, `named route "${name}"`)
+      return _createRoute(record, location, redirectedFrom)
     } else if (location.path) {
       // 这里为什么for循环而不直接 pathMap[path]
       //因为location.path可能带参数 如/bar?a=123
@@ -72,7 +99,7 @@ export function createMatcher() {
         const record = pathMap[path]
 
         if (matchRoute(record.regex, location.path)) {
-          return _createRoute(record, location)
+          return _createRoute(record, location, redirectedFrom)
         }
       }
     }
@@ -83,8 +110,9 @@ export function createMatcher() {
   function _createRoute(
     record,
     location,
+    redirectedFrom
   ) {
-    return createRoute(record, location)
+    return createRoute(record, location, redirectedFrom)
   }
 
   return {

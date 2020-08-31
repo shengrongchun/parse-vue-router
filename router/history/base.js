@@ -18,7 +18,7 @@ export class History {
   }
   transitionTo(location) {
     //通过location来创建route
-    const route = this.router.match(location)
+    const route = this.router.match(location, this.current)
     if (isSameRoute(route, this.current)) {//相同route
       return;
     }

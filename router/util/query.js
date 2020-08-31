@@ -1,4 +1,5 @@
 
+import { warn } from './warn'
 const encodeReserveRE = /[!'()*]/g
 const encodeReserveReplacer = c => '%' + c.charCodeAt(0).toString(16)
 const commaRE = /%2C/g
@@ -11,9 +12,57 @@ const encode = str =>
     .replace(encodeReserveRE, encodeReserveReplacer)
     .replace(commaRE, ',')
 
-// const decode = decodeURIComponent
+const decode = decodeURIComponent
+//query字符串--》key:value形式
+export function resolveQuery(
+  query,
+  extraQuery,
+  _parseQuery
+) {
+  const parse = _parseQuery || parseQuery
+  let parsedQuery
+  try {
+    parsedQuery = parse(query || '')
+  } catch (e) {
+    process.env.NODE_ENV !== 'production' && warn(false, e.message)
+    parsedQuery = {}
+  }
+  for (const key in extraQuery) {
+    const value = extraQuery[key]
+    parsedQuery[key] = Array.isArray(value)
+      ? value.map(castQueryParamValue)
+      : castQueryParamValue(value)
+  }
+  return parsedQuery
+}
 
+const castQueryParamValue = value => (value == null || typeof value === 'object' ? value : String(value))
 
+function parseQuery(query) {
+  const res = {}
+
+  query = query.trim().replace(/^(\?|#|&)/, '')
+
+  if (!query) {
+    return res
+  }
+
+  query.split('&').forEach(param => {
+    const parts = param.replace(/\+/g, ' ').split('=')
+    const key = decode(parts.shift())
+    const val = parts.length > 0 ? decode(parts.join('=')) : null
+
+    if (res[key] === undefined) {
+      res[key] = val
+    } else if (Array.isArray(res[key])) {
+      res[key].push(val)
+    } else {
+      res[key] = [res[key], val]
+    }
+  })
+
+  return res
+}
 // obj: {
 //   a:1,
 //   b:2

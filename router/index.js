@@ -13,8 +13,8 @@ export default class VueRouter {
     //
     this.history = new History(this, options.base)
   }
-  match(location) {
-    return this.matcher.match(location)
+  match(location, current) {
+    return this.matcher.match(location, current)
   }
   //初始化方法
   init(app) {//app vue根实例
