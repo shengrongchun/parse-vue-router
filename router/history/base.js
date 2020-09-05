@@ -37,14 +37,14 @@ export class History {
   }
 
 }
-
-export function getLocation(base) {//获取path
-  //返回当前url的路径部分
-  let path = decodeURI(window.location.pathname)
+// www.shengrongchun.com/pathname?search=123#hash=111
+export function getLocation(base) {//获取url的path
+  //
+  let path = decodeURI(window.location.pathname) // /pathname
   if (base && path.toLowerCase().indexOf(base.toLowerCase()) === 0) {
-    path = path.slice(base.length) // path中base去掉
+    path = path.slice(base.length) // path中有base去掉
   }
-  //？开始的查询部分和hash部分
+  // /pathname?search=123#hash=111
   return (path || '/') + window.location.search + window.location.hash
 }
 

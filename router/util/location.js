@@ -4,17 +4,20 @@ import { fillParams } from './params'
 import { warn } from './warn'
 import { extend } from './misc'
 
+// raw的可能性
+// 1：字符串如：/pathname?search=123#hash=111
+// 2：对象如： {path: '/……', query: {}} 3: {name: xxx, params: {}, query: {}}
 export function normalizeLocation(
-  raw, // 1: 字符串 2: {path: '/……', query: {}} 3: {name: xxx, params: {}}
+  raw,
   current,
   append, //是否直接追加到base路径后，相对参数
   router
 ) {
   let next = typeof raw === 'string' ? { path: raw } : raw
   // named target
-  if (next._normalized) {//标准化后的直接返回
+  if (next._normalized) {//有标准化后的标识直接返回
     return next
-  } else if (next.name) {
+  } else if (next.name) { // 如果有name
     next = extend({}, raw)
     const params = next.params
     if (params && typeof params === 'object') {
@@ -24,7 +27,7 @@ export function normalizeLocation(
   }
 
   // relative params 
-  //当push的location没有path,同时有params和当前路由，会把params追加到当前路由
+  //当 push 的location没有path,同时有params和当前路由，会把params追加到当前路由
   if (!next.path && next.params && current) {
     next = extend({}, next)
     next._normalized = true
@@ -50,9 +53,9 @@ export function normalizeLocation(
 
   // ?a=1&b=2 --> {a:1,b:2}
   const query = resolveQuery(
-    parsedPath.query,
-    next.query,
-    router && router.options.parseQuery
+    parsedPath.query, // 在next.path中解析出的query
+    next.query, //next自带的query
+    router && router.options.parseQuery // route配置中有自带的解析query的方法
   )
 
   let hash = next.hash || parsedPath.hash

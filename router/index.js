@@ -3,7 +3,7 @@ import { install } from './install'
 import { createMatcher } from './create-matcher'
 import { History } from './history/base'
 import { normalizeLocation } from './util/location'
-
+// stage-1: 参数 params/query/hash 和 动态路由 /bar/:id
 export default class VueRouter {
   constructor(options) {
     this.app = null //根实例
@@ -13,8 +13,8 @@ export default class VueRouter {
     //
     this.history = new History(this, options.base)
   }
-  match(location, current) {
-    return this.matcher.match(location, current)
+  match(location, current, redirectedFrom) {
+    return this.matcher.match(location, current, redirectedFrom)
   }
   //初始化方法
   init(app) {//app vue根实例

@@ -18,7 +18,6 @@ export function createRoute(
   } catch (e) {
     assert(false, 'clone 报错')
   }
-
   const route = { //创建当前路由对象--> this.$route
     name: location.name || (record && record.name),//当前路由的名称，如果有的话
     meta: (record && record.meta) || {},//meta元数据，如果有的话

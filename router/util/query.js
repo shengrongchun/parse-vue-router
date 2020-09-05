@@ -15,8 +15,8 @@ const encode = str =>
 const decode = decodeURIComponent
 //query字符串--》key:value形式
 export function resolveQuery(
-  query,
-  extraQuery,
+  query, // ?a=1
+  extraQuery, // {b:2}
   _parseQuery
 ) {
   const parse = _parseQuery || parseQuery
@@ -38,18 +38,24 @@ export function resolveQuery(
 
 const castQueryParamValue = value => (value == null || typeof value === 'object' ? value : String(value))
 
+// query: ?a=1&b=2&c=3&c=4
+// return : {
+//   a:1,
+//   b:2,
+//   c: [3,4]
+// }
 function parseQuery(query) {
   const res = {}
 
-  query = query.trim().replace(/^(\?|#|&)/, '')
+  query = query.trim().replace(/^(\?|#|&)/, '') // ？# & --> ''
 
   if (!query) {
     return res
   }
 
-  query.split('&').forEach(param => {
-    const parts = param.replace(/\+/g, ' ').split('=')
-    const key = decode(parts.shift())
+  query.split('&').forEach(param => { //[a=1,b=2,……]
+    const parts = param.replace(/\+/g, ' ').split('=') // + --> ' '
+    const key = decode(parts.shift()) // parts: [a,1] shift删除第一个元素并且返回第一个元素
     const val = parts.length > 0 ? decode(parts.join('=')) : null
 
     if (res[key] === undefined) {
@@ -65,9 +71,10 @@ function parseQuery(query) {
 }
 // obj: {
 //   a:1,
-//   b:2
+//   b:2,
+//   c: [3,4]
 // }
-// 把参数字符串化 ?a=1&b=2
+// 把参数字符串化 ?a=1&b=2&c=3&c=4
 export function stringifyQuery(obj) {
   const res = obj
     ? Object.keys(obj)

@@ -3,7 +3,7 @@ import Regexp from 'path-to-regexp'
 
 // $flow-disable-line
 const regexpCompileCache = Object.create(null)
-
+// ## pathMatch 通配符匹配的字符串
 export function fillParams(
   path,
   params,
@@ -11,6 +11,8 @@ export function fillParams(
 ) {
   params = params || {}
   try {
+    // 例子：path: /user/:id/:name
+    // Regexp.compile(path)( {id:111,name: hello} ) --> /user/111/hello
     const filler =
       regexpCompileCache[path] ||
       (regexpCompileCache[path] = Regexp.compile(path))
