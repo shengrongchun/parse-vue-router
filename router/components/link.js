@@ -15,6 +15,8 @@ export default {
       type: String,
       default: 'a'
     },
+    append: Boolean,
+    replace: Boolean,
     event: {
       type: eventTypes,
       default: 'click'
@@ -22,14 +24,21 @@ export default {
   },
   render(h) {
     const router = this.$router
+    const current = this.$route
     const { location } = router.resolve(
-      this.to
+      this.to,
+      current,
+      this.append
     )
 
     const data = {
       on: {
         click: () => {
-          router.push(location)
+          if (this.replace) {
+            router.replace(location)
+          } else {
+            router.push(location)
+          }
         }
       }
     }

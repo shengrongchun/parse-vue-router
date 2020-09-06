@@ -12,7 +12,7 @@ export function resolvePath(
   if (firstChar === '?' || firstChar === '#') {
     return base + relative
   }
-
+  //说明这个 relative 是一个相对路径
   const stack = base.split('/')
 
   // remove trailing segment if:

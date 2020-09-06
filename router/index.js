@@ -1,9 +1,10 @@
 import { inBrowser } from './util/dom'
 import { install } from './install'
+import { assert } from './util/warn'
 import { createMatcher } from './create-matcher'
-import { History } from './history/base'
+import { HTML5History } from './history/html5'
 import { normalizeLocation } from './util/location'
-// stage-1: 参数 params/query/hash 和 动态路由 /bar/:id
+//
 export default class VueRouter {
   constructor(options) {
     this.app = null //根实例
@@ -11,10 +12,19 @@ export default class VueRouter {
     this.options = options
     this.matcher = createMatcher(options.routes || [], this)
     //
-    this.history = new History(this, options.base)
+    let mode = options.mode || 'hash'
+    switch (mode) {
+      case 'history':
+        this.history = new HTML5History(this, options.base)
+        break
+      default:
+        if (process.env.NODE_ENV !== 'production') {
+          assert(false, `invalid mode: ${mode}`)
+        }
+    }
   }
-  match(location, current, redirectedFrom) {
-    return this.matcher.match(location, current, redirectedFrom)
+  match(location, current) {//通过location获取匹配的route
+    return this.matcher.match(location, current)
   }
   //初始化方法
   init(app) {//app vue根实例
@@ -23,28 +33,34 @@ export default class VueRouter {
     this.app = app
     const history = this.history
     //初始化时候去匹配更改当前路由
-    history.transitionTo(history.getCurrentLocation())
+    history.transitionTo(history.getCurrentLocation(), () => { })
     //
     history.listen(route => {
       this.apps.forEach((app) => {
         console.log('_route 值改变了', route)
         app._route = route
       })
-      //不刷新更改浏览器url
-      window.history.pushState(null, null, route.fullPath)
     })
   }
   //router-link 组件中用到，获取location-->push-->transitionTo
   resolve(
-    to
+    to,
+    current,
+    append
   ) {
-    const location = normalizeLocation(to)
+    current = current || this.history.current
+    const location = normalizeLocation(to, current, append)
     return {
       location,
     }
   }
+
   push(location) {
     this.history.push(location)
+  }
+
+  replace(location) {
+    this.history.replace(location)
   }
 }
 //

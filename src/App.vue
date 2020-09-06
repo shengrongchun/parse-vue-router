@@ -9,7 +9,7 @@
       <br />
       <router-link to="/foo">Go to Foo</router-link>
       <br />
-      <router-link to="/bar/123">Go to Bar</router-link>
+      <router-link to="/bar">Go to Bar</router-link>
     </p>
     <!-- 路由匹配到的组件将渲染在这里 -->
     <router-view></router-view>

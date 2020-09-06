@@ -13,10 +13,12 @@ export class History {
     this.current = START //$route
     console.log('初始化当前路由', this.current)
   }
-  getCurrentLocation() {//获取当前url path
-    return getLocation(this.base)
+
+  listen(cb) {
+    this.cb = cb
   }
-  transitionTo(location) {
+
+  transitionTo(location, onComplete) {
     //通过location来创建route
     const route = this.router.match(location, this.current)
     if (isSameRoute(route, this.current)) {//相同route
@@ -24,28 +26,13 @@ export class History {
     }
     this.updateRoute(route)
     console.log('路由改变', route)
+    onComplete(route) // 路由改变后执行的完成方法
   }
+
   updateRoute(route) {
     this.current = route
     this.cb && this.cb(route) // 去改变 实例的_route
   }
-  listen(cb) {
-    this.cb = cb
-  }
-  push(location) {
-    this.transitionTo(location)
-  }
-
-}
-// www.shengrongchun.com/pathname?search=123#hash=111
-export function getLocation(base) {//获取url的path
-  //
-  let path = decodeURI(window.location.pathname) // /pathname
-  if (base && path.toLowerCase().indexOf(base.toLowerCase()) === 0) {
-    path = path.slice(base.length) // path中有base去掉
-  }
-  // /pathname?search=123#hash=111
-  return (path || '/') + window.location.search + window.location.hash
 }
 
 function normalizeBase(base) {
@@ -68,3 +55,4 @@ function normalizeBase(base) {
   // remove trailing slash
   return base.replace(/\/$/, '')
 }
+
