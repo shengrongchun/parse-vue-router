@@ -23,8 +23,8 @@ export default class VueRouter {
         }
     }
   }
-  match(location, current) {//通过location获取匹配的route
-    return this.matcher.match(location, current)
+  match(location, current, redirectedFrom) {//通过location获取匹配的route
+    return this.matcher.match(location, current, redirectedFrom)
   }
   //初始化方法
   init(app) {//app vue根实例

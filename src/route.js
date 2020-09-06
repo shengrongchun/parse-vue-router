@@ -5,8 +5,13 @@ import Bar from './components/Bar'
 export default {
   mode: 'history',
   routes: [
-    { path: '/', name: 'home', component: Home },
-    { path: '/foo', name: 'foo', component: Foo },
-    { path: '/bar', name: 'bar', component: Bar }
+    { path: '/', name: 'home', component: Home, redirect: '/bar' },
+    {
+      path: '/foo', name: 'foo', component: Foo, children: [{
+        path: 'bar',
+        component: Bar
+      }]
+    },
+    { path: '/bar', name: 'bar', component: Bar, alias: '/alias-bar' }
   ]
 }

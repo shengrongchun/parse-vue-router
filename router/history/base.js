@@ -27,6 +27,7 @@ export class History {
     this.updateRoute(route)
     console.log('路由改变', route)
     onComplete(route) // 路由改变后执行的完成方法
+    this.ensureURL() // 确保当前路由的path和url保持一致
   }
 
   updateRoute(route) {

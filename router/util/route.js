@@ -3,6 +3,7 @@ const trailingSlashRE = /\/?$/
 export function createRoute(
   record,
   location,
+  redirectedFrom
 ) {
   //
   const route = { //创建当前路由对象--> this.$route
@@ -10,7 +11,10 @@ export function createRoute(
     meta: (record && record.meta) || {},//meta元数据，如果有的话
     path: location.path || '/',//字符串，对应当前路由的路径，总是解析为绝对路径，如 "/foo/bar"
     //一个数组，包含当前路由的所有嵌套路径片段的路由记录
-    matched: record ? { components: record.components } : {}
+    matched: record ? formatMatch(record) : []
+  }
+  if (redirectedFrom) {
+    // route.redirectedFrom = getFullPath(redirectedFrom, stringifyQuery)
   }
   //
   return Object.freeze(route)//冻结对象，不让其修改
@@ -20,6 +24,16 @@ export const START = createRoute(null, {
   path: '/'
 })
 
+//嵌套路由视图
+// [父, 子, 子的子……]
+function formatMatch(record) {
+  const res = []
+  while (record) {
+    res.unshift(record)
+    record = record.parent
+  }
+  return res
+}
 
 //是否相同route
 export function isSameRoute(a, b) {
