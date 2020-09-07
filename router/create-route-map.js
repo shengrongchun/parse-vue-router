@@ -1,4 +1,5 @@
 
+import Regexp from 'path-to-regexp'
 import { cleanPath } from './util/path'
 import { assert, warn } from './util/warn'
 
@@ -43,9 +44,13 @@ function addRouteRecord(
     route.pathToRegexpOptions || {}
   const normalizedPath = normalizePath(path, parent, pathToRegexpOptions.strict)
 
+  if (typeof route.caseSensitive === 'boolean') {// 匹配规则是否大小写敏感？(默认值：false)
+    pathToRegexpOptions.sensitive = route.caseSensitive
+  }
 
   const record = {
     path: normalizedPath,
+    regex: compileRouteRegex(normalizedPath, pathToRegexpOptions),
     components: route.components || { default: route.component },
     name,
     parent,
@@ -129,6 +134,24 @@ function addRouteRecord(
   }
 }
 
+function compileRouteRegex(
+  path,
+  pathToRegexpOptions
+) {
+  const regex = Regexp(path, [], pathToRegexpOptions)
+  console.log('regex', regex.keys)
+  if (process.env.NODE_ENV !== 'production') {
+    const keys = Object.create(null)
+    regex.keys.forEach(key => {
+      warn(
+        !keys[key.name],
+        `Duplicate param keys in route with path: "${path}"`
+      )
+      keys[key.name] = true
+    })
+  }
+  return regex
+}
 
 // 标准化path
 function normalizePath(

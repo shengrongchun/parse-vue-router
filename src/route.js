@@ -1,6 +1,7 @@
 import Home from './components/Home'
 import Foo from './components/Foo'
 import Bar from './components/Bar'
+import Man from './components/Man'
 
 export default {
   mode: 'history',
@@ -12,6 +13,7 @@ export default {
         component: Bar
       }]
     },
-    { path: '/bar', name: 'bar', component: Bar, alias: '/alias-bar' }
+    { path: '/bar', name: 'bar', component: Bar, alias: '/alias-bar' },
+    { path: '/man/:id', name: 'man', component: Man }
   ]
 }

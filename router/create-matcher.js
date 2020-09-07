@@ -3,6 +3,7 @@ import { resolvePath } from './util/path'
 import { fillParams } from './util/params'
 import { normalizeLocation } from './util/location'
 import { createRouteMap } from './create-route-map'
+import { assert, warn } from './util/warn'
 
 // routes: [
 //   { path: '/', name: 'home', component: Home },
@@ -55,6 +56,7 @@ import { createRouteMap } from './create-route-map'
 //通过当前location创建当前路由
 export function createMatcher(
   routes,
+  router
 ) {
   const { pathList, pathMap, nameMap } = createRouteMap(routes)
   console.log('pathList', pathList)
