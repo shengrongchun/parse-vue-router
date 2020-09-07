@@ -133,19 +133,19 @@ function addRouteRecord(
     }
   }
 }
-
+//path: /man/:id
+//regex.keys: [{name: id,optional: false……}]
 function compileRouteRegex(
   path,
   pathToRegexpOptions
 ) {
   const regex = Regexp(path, [], pathToRegexpOptions)
-  console.log('regex', regex.keys)
   if (process.env.NODE_ENV !== 'production') {
     const keys = Object.create(null)
     regex.keys.forEach(key => {
       warn(
         !keys[key.name],
-        `Duplicate param keys in route with path: "${path}"`
+        `Duplicate param keys in route with path: "${path}"` // /man/:id/:id
       )
       keys[key.name] = true
     })

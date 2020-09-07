@@ -74,8 +74,17 @@ export function createMatcher(
       const record = nameMap[name]
       return _createRoute(record, location, redirectedFrom)
     } else if (location.path) {
-      const record = pathMap[location.path === '/' ? '' : location.path]
-      return _createRoute(record, location, redirectedFrom)
+      //动态路由这里需要改造 直接的pathMap[location.path]是获取不到的
+      //如：pathMap: {'/man/:id':record} location.path: /man/123
+      // 我们可以轮询pathMap里的record ,通过record.regex来匹配 location.path，如果匹配上就获取到了匹配的record
+      // 当然这里是会获取最先匹配上的 即使：pathMap: {'/man/:id':record1,'/man/:user':record2} location.path: /man/123
+      for (let i = 0; i < pathList.length; i++) {
+        const path = pathList[i]
+        const record = pathMap[path]
+        if (matchRoute(record.regex, location.path)) {
+          return _createRoute(record, location, redirectedFrom)
+        }
+      }
     }
     // no match
     return _createRoute(null, location, redirectedFrom)
@@ -181,6 +190,56 @@ export function createMatcher(
   }
 }
 
+// path: /man/123/456   regex是通过 /man/:id/:user创建的正则解析对象
+// regex.keys: [
+//   {
+//     asterisk: false
+//     delimiter: "/"
+//     name: "id"
+//     optional: false
+//     partial: false
+//     pattern: "[^\/]+?"
+//     prefix: "/"
+//     repeat: false
+//   },
+//   {
+//     asterisk: false
+//     delimiter: "/"
+//     name: "user"
+//     optional: false
+//     partial: false
+//     pattern: "[^\/]+?"
+//     prefix: "/"
+//     repeat: false
+//   },
+// ]
+// path.match(regex)：["/man/123/456", "123", "456", index: 0, input: "/man/123/456", ……]
+function matchRoute(
+  regex,
+  path,
+  params
+) {
+  //
+  const m = path.match(regex)
+
+  if (!m) {//没有匹配上
+    return false
+  } else if (!params) { //?
+    return true
+  }
+
+  for (let i = 1, len = m.length; i < len; ++i) {
+    const key = regex.keys[i - 1]
+    const val = typeof m[i] === 'string' ? decodeURIComponent(m[i]) : m[i]
+    if (key) {
+      // Fix #1994: using * with props: true generates a param named 0
+      // key.name:0 的情况，path: /man-* , push({path: '/man-pathM'}) --> params.pathMatch = pathM
+      params[key.name || 'pathMatch'] = val
+    }
+  }
+
+  return true
+}
 
 function resolveRecordPath(path, record) {
   return resolvePath(path, record.parent ? record.parent.path : '/', true)
