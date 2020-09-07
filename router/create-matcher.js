@@ -1,9 +1,9 @@
-import { createRoute } from './util/route'
 import { resolvePath } from './util/path'
+import { assert, warn } from './util/warn'
+import { createRoute } from './util/route'
 import { fillParams } from './util/params'
 import { normalizeLocation } from './util/location'
 import { createRouteMap } from './create-route-map'
-import { assert, warn } from './util/warn'
 
 // routes: [
 //   { path: '/', name: 'home', component: Home },
@@ -68,12 +68,34 @@ export function createMatcher(
     currentRoute,
     redirectedFrom
   ) {
-    const location = normalizeLocation(raw, currentRoute, false)
+    const location = normalizeLocation(raw, currentRoute, false, router)
     const { name } = location
     if (name) {
       const record = nameMap[name]
+      if (process.env.NODE_ENV !== 'production') {
+        warn(record, `Route with name '${name}' does not exist`)
+      }
+      if (!record) return _createRoute(null, location)
+      //通过正则来收集path应当的参数 如： /a/:username/:userid   paramNames: [username, userid]
+      const paramNames = record.regex.keys
+        .filter(key => !key.optional)
+        .map(key => key.name)
+      if (typeof location.params !== 'object') {
+        location.params = {}
+      }
+      // 把currentRoute的符合规则的参数放入location.params中
+      if (currentRoute && typeof currentRoute.params === 'object') {
+        for (const key in currentRoute.params) {
+          if (!(key in location.params) && paramNames.indexOf(key) > -1) {
+            location.params[key] = currentRoute.params[key]
+          }
+        }
+      }
+      // 把params填充到path
+      location.path = fillParams(record.path, location.params, `named route "${name}"`)
       return _createRoute(record, location, redirectedFrom)
     } else if (location.path) {
+      location.params = {} // 这句代码，让在有path的时候无视了params
       //动态路由这里需要改造 直接的pathMap[location.path]是获取不到的
       //如：pathMap: {'/man/:id':record} location.path: /man/123
       // 我们可以轮询pathMap里的record ,通过record.regex来匹配 location.path，如果匹配上就获取到了匹配的record
@@ -81,7 +103,7 @@ export function createMatcher(
       for (let i = 0; i < pathList.length; i++) {
         const path = pathList[i]
         const record = pathMap[path]
-        if (matchRoute(record.regex, location.path)) {
+        if (matchRoute(record.regex, location.path, location.params)) {
           return _createRoute(record, location, redirectedFrom)
         }
       }
@@ -182,7 +204,7 @@ export function createMatcher(
     if (record && record.matchAs) {// 如果有是谁的别名
       return alias(record, location, record.matchAs)
     }
-    return createRoute(record, location, redirectedFrom)
+    return createRoute(record, location, redirectedFrom, router)
   }
   //
   return {

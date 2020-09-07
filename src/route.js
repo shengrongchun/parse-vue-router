@@ -2,6 +2,7 @@ import Home from './components/Home'
 import Foo from './components/Foo'
 import Bar from './components/Bar'
 import Man from './components/Man'
+import Params from './components/Params'
 
 export default {
   mode: 'history',
@@ -14,6 +15,11 @@ export default {
       }]
     },
     { path: '/bar', name: 'bar', component: Bar, alias: '/alias-bar' },
-    { path: '/man/:id', name: 'man', component: Man }
+    { path: '/man/:id', name: 'man', component: Man },
+    {
+      path: '/params',
+      name: 'params',
+      component: Params
+    }
   ]
 }

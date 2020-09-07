@@ -13,8 +13,27 @@ export function createRouteMap(
   routes.forEach(route => {
     addRouteRecord(pathList, pathMap, nameMap, route)
   })
-  //
 
+  // ensure wildcard routes are always at the end
+  // 确保*path总是在最后,当通过path没有匹配到任何record，则在正则匹配的时候，*是永远匹配上的
+  for (let i = 0, l = pathList.length; i < l; i++) {
+    if (pathList[i] === '*') {
+      pathList.push(pathList.splice(i, 1)[0])
+      l--
+      i--
+    }
+  }
+  if (process.env.NODE_ENV === 'development') {
+    // warn if routes do not include leading slashes
+    const found = pathList
+      // check for missing leading slash
+      .filter(path => path && path.charAt(0) !== '*' && path.charAt(0) !== '/')
+
+    if (found.length > 0) {
+      const pathNames = found.map(path => `- ${path}`).join('\n')
+      warn(false, `Non-nested routes must include a leading slash character. Fix the following routes: \n${pathNames}`)
+    }
+  }
   return {
     pathList,
     pathMap,

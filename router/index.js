@@ -28,6 +28,11 @@ export default class VueRouter {
   }
   //初始化方法
   init(app) {//app vue根实例
+    process.env.NODE_ENV !== 'production' && assert(
+      install.installed,
+      `not installed. Make sure to call \`Vue.use(VueRouter)\` ` +
+      `before creating root instance.`
+    )
     this.apps.push(app)
     if (this.app) return
     this.app = app
@@ -49,7 +54,7 @@ export default class VueRouter {
     append
   ) {
     current = current || this.history.current
-    const location = normalizeLocation(to, current, append)
+    const location = normalizeLocation(to, current, append, this)
     return {
       location,
     }

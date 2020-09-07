@@ -17,7 +17,7 @@ export class HTML5History extends History {
   push(location) {
     const onComplete = (route) => {
       //不刷新更改浏览器url 并且增加一条记录，浏览器可以回退
-      pushState(cleanPath(this.base + route.path))
+      pushState(cleanPath(this.base + route.fullPath))
     }
     this.transitionTo(location, onComplete)
   }
@@ -25,14 +25,14 @@ export class HTML5History extends History {
   replace(location) {
     const onComplete = (route) => {
       //不刷新更改浏览器url 并且刷新记录
-      replaceState(cleanPath(this.base + route.path))
+      replaceState(cleanPath(this.base + route.fullPath))
     }
     this.transitionTo(location, onComplete)
   }
 
   ensureURL(push) { //确保当前路由的path和url保持一致
-    if (getLocation(this.base) !== this.current.path) {
-      const current = cleanPath(this.base + this.current.path)
+    if (getLocation(this.base) !== this.current.fullPath) {
+      const current = cleanPath(this.base + this.current.fullPath)
       push ? pushState(current) : replaceState(current)
     }
   }
