@@ -13,7 +13,7 @@ export function createRouteMap(
   routes.forEach(route => {
     addRouteRecord(pathList, pathMap, nameMap, route)
   })
-
+  // https://router.vuejs.org/zh/guide/essentials/dynamic-matching.html#%E6%8D%95%E8%8E%B7%E6%89%80%E6%9C%89%E8%B7%AF%E7%94%B1%E6%88%96-404-not-found-%E8%B7%AF%E7%94%B1
   // ensure wildcard routes are always at the end
   // 确保*path总是在最后,当通过path没有匹配到任何record，则在正则匹配的时候，*是永远匹配上的
   for (let i = 0, l = pathList.length; i < l; i++) {
@@ -76,6 +76,12 @@ function addRouteRecord(
     matchAs,//是谁的别名
     redirect: route.redirect, // 有重定向参数
     meta: route.meta || {},
+    props: //路由组件传参 有了这个功能，组件可以不再和$route耦合 举个在开发中遇到的例子
+      route.props == null
+        ? {}
+        : route.components
+          ? route.props
+          : { default: route.props }
   }
   // **嵌套路由**
   if (route.children) {

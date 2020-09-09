@@ -16,7 +16,7 @@ export default {
 
     const h = parent.$createElement
     const name = props.name
-    const route = parent.$route
+    const route = parent.$route // 对 $route有依赖，所以每次 $route变化的时候，都会重新render
     //创建缓存
     const cache = parent._routerViewCache || (parent._routerViewCache = {})
 
@@ -37,7 +37,7 @@ export default {
     data.routerViewDepth = depth
 
     // render previous view if the tree is inactive and kept-alive
-    if (inactive) {
+    if (inactive) {//不活跃状态
       const cachedData = cache[name]
       const cachedComponent = cachedData && cachedData.component
       if (cachedComponent) {
@@ -54,9 +54,9 @@ export default {
     }
 
 
-    const matched = route.matched[depth]
+    const matched = route.matched[depth] //record
     const component = matched && matched.components[name]
-
+    console.log('component', component)
     if (!matched || !component) {
       cache[name] = null
       return h()
@@ -64,7 +64,7 @@ export default {
     console.log('RouteView组件', route);
     // cache component
     cache[name] = { component }
-
+    // https://router.vuejs.org/zh/guide/essentials/passing-props.html 官网地址
     const configProps = matched.props && matched.props[name]
     // save route and configProps in cache
     if (configProps) {
@@ -80,12 +80,12 @@ export default {
 }
 
 function fillPropsinData(component, data, route, configProps) {
-  // resolve props
+  // resolve props data.props在组件render过程中，会给相同key的component.prop赋值
   let propsToPass = data.props = resolveProps(route, configProps)
   if (propsToPass) {
     // clone to prevent mutation
     propsToPass = data.props = extend({}, propsToPass)
-    // pass non-declared props as attrs
+    // pass non-declared props as attrs props传的值没有在组件中的props里定义，就存储在attrs中
     const attrs = data.attrs = data.attrs || {}
     for (const key in propsToPass) {
       if (!component.props || !(key in component.props)) {
@@ -103,9 +103,9 @@ function resolveProps(route, config) {
     case 'object':
       return config
     case 'function':
-      return config(route)
+      return config(route) // 函数的参数传的是当前的route
     case 'boolean':
-      return config ? route.params : undefined
+      return config ? route.params : undefined  // 比如 params: {a:1,b:2} --> 在组件的props: {a:1,b:2}
     default:
       if (process.env.NODE_ENV !== 'production') {
         warn(

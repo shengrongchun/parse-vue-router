@@ -14,7 +14,11 @@ export default {
         component: Bar
       }]
     },
-    { path: '/bar', name: 'bar', component: Bar, alias: '/alias-bar' },
+    {
+      path: '/bar', name: 'bar', component: Bar, alias: '/alias-bar', props: {
+        propsName: '路由组件传参'
+      }
+    },
     { path: '/man/:id', name: 'man', component: Man },
     {
       path: '/params',
