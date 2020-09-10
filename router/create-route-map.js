@@ -71,10 +71,12 @@ function addRouteRecord(
     path: normalizedPath,
     regex: compileRouteRegex(normalizedPath, pathToRegexpOptions),
     components: route.components || { default: route.component },
+    instances: {}, // components对应的实例
     name,
     parent,
     matchAs,//是谁的别名
     redirect: route.redirect, // 有重定向参数
+    beforeEnter: route.beforeEnter, //路由配置里定义的 beforeEnter
     meta: route.meta || {},
     props: //路由组件传参 有了这个功能，组件可以不再和$route耦合 举个在开发中遇到的例子
       route.props == null

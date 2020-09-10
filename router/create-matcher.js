@@ -137,8 +137,11 @@ export function createMatcher(
     const re = redirect
     const { name, path } = re
     let { query, hash, params } = location
+    // eslint-disable-next-line no-prototype-builtins
     query = re.hasOwnProperty('query') ? re.query : query
+    // eslint-disable-next-line no-prototype-builtins
     hash = re.hasOwnProperty('hash') ? re.hash : hash
+    // eslint-disable-next-line no-prototype-builtins
     params = re.hasOwnProperty('params') ? re.params : params
 
     if (name) {

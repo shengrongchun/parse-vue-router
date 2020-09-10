@@ -12,6 +12,12 @@ export function install(Vue) {
 
   const isDef = v => v !== undefined
 
+  const registerInstance = (vm, callVal) => {
+    let i = vm.$options._parentVnode
+    if (isDef(i) && isDef(i = i.data) && isDef(i = i.registerRouteInstance)) {
+      i(vm, callVal)
+    }
+  }
   // vue想在每个实例中挂载一个属性_routerRoot
   Vue.mixin({
     beforeCreate() {
@@ -27,6 +33,11 @@ export function install(Vue) {
       } else {//其他子实例
         this._routerRoot = (this.$parent && this.$parent._routerRoot) || this
       }
+      //添加实例
+      registerInstance(this, this)
+    },
+    destroyed() {//销毁实例
+      registerInstance(this)
     }
   })
 
