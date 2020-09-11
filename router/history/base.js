@@ -31,6 +31,7 @@ export class History {
     this.readyCbs = [] //存放read后要执行的函数
     this.readyErrorCbs = [] //存放ready失败后要执行的函数
     this.errorCbs = [] //存放有错误发生后要执行的函数
+    this.listeners = []
     console.log('初始化当前路由', this.current)
   }
 
@@ -229,6 +230,17 @@ export class History {
   updateRoute(route) {
     this.current = route
     this.cb && this.cb(route) // 去改变 实例的_route
+  }
+  //
+  setupListeners() {
+    // Default implementation is empty
+  }
+
+  teardownListeners() {
+    this.listeners.forEach(cleanupListener => {
+      cleanupListener()
+    })
+    this.listeners = []
   }
 }
 

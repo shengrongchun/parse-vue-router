@@ -12,10 +12,10 @@ export function genStateKey() {
 
 let _key = genStateKey()
 
-export function getStateKey() {
+export function getStateKey() {//获取唯一key
   return _key
 }
 
-export function setStateKey(key) {
+export function setStateKey(key) {//设置唯一key
   return (_key = key)
 }

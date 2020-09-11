@@ -4,6 +4,8 @@ import { assert } from './util/warn'
 import { createMatcher } from './create-matcher'
 import { HTML5History } from './history/html5'
 import { normalizeLocation } from './util/location'
+import { supportsPushState } from './util/push-state'
+import { handleScroll } from './util/scroll'
 //
 export default class VueRouter {
   constructor(options) {
@@ -39,13 +41,40 @@ export default class VueRouter {
       `before creating root instance.`
     )
     this.apps.push(app)
+    // set up app destroyed handler
+    // https://github.com/vuejs/vue-router/issues/2639
+    app.$once('hook:destroyed', () => {
+      // clean out app from this.apps array once destroyed
+      const index = this.apps.indexOf(app)
+      if (index > -1) this.apps.splice(index, 1)
+      // ensure we still have a main app or null if no apps
+      // we do not release the router so it can be reused
+      if (this.app === app) this.app = this.apps[0] || null
+
+      if (!this.app) {
+        // clean up event listeners
+        // https://github.com/vuejs/vue-router/issues/2341
+        this.history.teardownListeners()
+      }
+    })
     if (this.app) return
     this.app = app
     const history = this.history
     //初始化时候去匹配更改当前路由
-    const onComplete = () => { } //路由跳转成功我们可能需要执行的函数
-    const onAbort = () => { } //路由跳转失败我们可能需要执行的函数
-    history.transitionTo(history.getCurrentLocation(), onComplete, onAbort)
+    const handleInitialScroll = (routeOrError) => {//滚动行为
+      const from = history.current
+      const expectScroll = this.options.scrollBehavior
+      const supportsScroll = supportsPushState && expectScroll
+
+      if (supportsScroll && 'fullPath' in routeOrError) {
+        handleScroll(this, routeOrError, from, false)
+      }
+    }
+    const onCompleteOrAbort = (routeOrError) => {//这里可以增加滚动行为 https://router.vuejs.org/zh/guide/advanced/scroll-behavior.html#%E5%BC%82%E6%AD%A5%E6%BB%9A%E5%8A%A8
+      history.setupListeners()
+      handleInitialScroll(routeOrError)
+    } //路由跳转成功或者失败我们可能需要执行的函数
+    history.transitionTo(history.getCurrentLocation(), onCompleteOrAbort, onCompleteOrAbort)
     //
     history.listen(route => {
       this.apps.forEach((app) => {
