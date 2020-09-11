@@ -72,7 +72,6 @@ export function flatMapComponents(
   matched,
   fn
 ) {
-  console.log('mat', matched)
   return flatten(matched.map(m => {
     return Object.keys(m.components).map(key => fn(
       m.components[key],

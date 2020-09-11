@@ -63,6 +63,10 @@ export function createMatcher(
   console.log('pathMap', pathMap)
   console.log('nameMap', nameMap)
 
+  function addRoutes(routes) {// 动态添加路由配置信息函数
+    createRouteMap(routes, pathList, pathMap, nameMap)
+  }
+
   function match(
     raw,
     currentRoute,
@@ -212,6 +216,7 @@ export function createMatcher(
   //
   return {
     match,
+    addRoutes
   }
 }
 

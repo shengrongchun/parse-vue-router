@@ -59,4 +59,8 @@ export function install(Vue) {
   //注册全局组件
   Vue.component('RouterView', View)
   Vue.component('RouterLink', Link)
+  //这里是定义了，在组件中mixin和vue.extend 相关hooks时候的合并策略，痛created一样
+  const strats = Vue.config.optionMergeStrategies
+  // use the same hook merging strategy for route hooks
+  strats.beforeRouteEnter = strats.beforeRouteLeave = strats.beforeRouteUpdate = strats.created
 }

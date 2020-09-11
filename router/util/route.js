@@ -1,5 +1,4 @@
 import { stringifyQuery } from './query'
-import { assert } from './warn'
 const trailingSlashRE = /\/?$/
 
 export function createRoute(
@@ -14,9 +13,8 @@ export function createRoute(
   let query = location.query || {}
   try {
     query = clone(query)
-  } catch (e) {
-    assert(false, 'clone 报错')
-  }
+    // eslint-disable-next-line no-empty
+  } catch (e) { }
   //
   const route = { //创建当前路由对象--> this.$route
     name: location.name || (record && record.name),//当前路由的名称，如果有的话
@@ -119,4 +117,23 @@ function isObjectEqual(a = {}, b = {}) {
     }
     return String(aVal) === String(bVal)
   })
+}
+//
+export function isIncludedRoute(current, target) {
+  return (
+    current.path.replace(trailingSlashRE, '/').indexOf(
+      target.path.replace(trailingSlashRE, '/')
+    ) === 0 &&
+    (!target.hash || current.hash === target.hash) &&
+    queryIncludes(current.query, target.query)
+  )
+}
+
+function queryIncludes(current, target) {
+  for (const key in target) {
+    if (!(key in current)) {
+      return false
+    }
+  }
+  return true
 }

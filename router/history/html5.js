@@ -51,9 +51,10 @@ export class HTML5History extends History {
 
   push(location, onComplete, onAbort) {
     const Complete = (route) => {
+      const { current: fromRoute } = this
       //不刷新更改浏览器url 并且增加一条记录，浏览器可以回退
       pushState(cleanPath(this.base + route.fullPath))
-      handleScroll(this.router, route, this.current, false) //滚动行为
+      handleScroll(this.router, route, fromRoute, false) //滚动行为
       onComplete && onComplete(route)
     }
     this.transitionTo(location, Complete, onAbort)
@@ -61,9 +62,10 @@ export class HTML5History extends History {
 
   replace(location, onComplete, onAbort) {
     const Complete = (route) => {
+      const { current: fromRoute } = this
       //不刷新更改浏览器url 并且刷新记录
       replaceState(cleanPath(this.base + route.fullPath))
-      handleScroll(this.router, route, this.current, false) //滚动行为
+      handleScroll(this.router, route, fromRoute, false) //滚动行为
       onComplete && onComplete(route)
     }
     this.transitionTo(location, Complete, onAbort)

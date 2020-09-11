@@ -1,11 +1,16 @@
 import { inBrowser } from './util/dom'
 import { install } from './install'
+import { START } from './util/route'
 import { assert } from './util/warn'
+import { cleanPath } from './util/path'
 import { createMatcher } from './create-matcher'
-import { HTML5History } from './history/html5'
 import { normalizeLocation } from './util/location'
 import { supportsPushState } from './util/push-state'
 import { handleScroll } from './util/scroll'
+
+import { HashHistory } from './history/hash'
+import { HTML5History } from './history/html5'
+import { AbstractHistory } from './history/abstract'
 //
 export default class VueRouter {
   constructor(options) {
@@ -19,10 +24,26 @@ export default class VueRouter {
     //
     this.matcher = createMatcher(options.routes || [], this)
     //
+    // this.fallback 表示在浏览器不支持 history.pushState 的情况下，根据传入的 fallback 配置参数，决定是否回退到hash模式
     let mode = options.mode || 'hash'
+    this.fallback = mode === 'history' && !supportsPushState && options.fallback !== false
+    if (this.fallback) {
+      mode = 'hash'
+    }
+    if (!inBrowser) {//非浏览器环境下
+      mode = 'abstract'
+    }
+    this.mode = mode
+
     switch (mode) {
       case 'history':
         this.history = new HTML5History(this, options.base)
+        break
+      case 'hash':
+        this.history = new HashHistory(this, options.base, this.fallback)
+        break
+      case 'abstract':
+        this.history = new AbstractHistory(this, options.base)
         break
       default:
         if (process.env.NODE_ENV !== 'production') {
@@ -33,6 +54,11 @@ export default class VueRouter {
   match(location, current, redirectedFrom) {//通过location获取匹配的route
     return this.matcher.match(location, current, redirectedFrom)
   }
+
+  get currentRoute() {
+    return this.history && this.history.current
+  }
+
   //初始化方法
   init(app) {//app vue根实例
     process.env.NODE_ENV !== 'production' && assert(
@@ -60,21 +86,23 @@ export default class VueRouter {
     if (this.app) return
     this.app = app
     const history = this.history
-    //初始化时候去匹配更改当前路由
-    const handleInitialScroll = (routeOrError) => {//滚动行为
-      const from = history.current
-      const expectScroll = this.options.scrollBehavior
-      const supportsScroll = supportsPushState && expectScroll
+    if (history instanceof HTML5History || history instanceof HashHistory) {
+      //初始化时候去匹配更改当前路由
+      const handleInitialScroll = (routeOrError) => {//滚动行为
+        const from = history.current
+        const expectScroll = this.options.scrollBehavior
+        const supportsScroll = supportsPushState && expectScroll
 
-      if (supportsScroll && 'fullPath' in routeOrError) {
-        handleScroll(this, routeOrError, from, false)
+        if (supportsScroll && 'fullPath' in routeOrError) {
+          handleScroll(this, routeOrError, from, false)
+        }
       }
+      const onCompleteOrAbort = (routeOrError) => {//这里可以增加滚动行为 https://router.vuejs.org/zh/guide/advanced/scroll-behavior.html#%E5%BC%82%E6%AD%A5%E6%BB%9A%E5%8A%A8
+        history.setupListeners()
+        handleInitialScroll(routeOrError)
+      } //路由跳转成功或者失败我们可能需要执行的函数
+      history.transitionTo(history.getCurrentLocation(), onCompleteOrAbort, onCompleteOrAbort)
     }
-    const onCompleteOrAbort = (routeOrError) => {//这里可以增加滚动行为 https://router.vuejs.org/zh/guide/advanced/scroll-behavior.html#%E5%BC%82%E6%AD%A5%E6%BB%9A%E5%8A%A8
-      history.setupListeners()
-      handleInitialScroll(routeOrError)
-    } //路由跳转成功或者失败我们可能需要执行的函数
-    history.transitionTo(history.getCurrentLocation(), onCompleteOrAbort, onCompleteOrAbort)
     //
     history.listen(route => {
       this.apps.forEach((app) => {
@@ -105,18 +133,6 @@ export default class VueRouter {
     this.history.onError(errorCb)
   }
 
-  //router-link 组件中用到，获取location-->push-->transitionTo
-  resolve(
-    to,
-    current,
-    append
-  ) {
-    current = current || this.history.current
-    const location = normalizeLocation(to, current, append, this)
-    return {
-      location,
-    }
-  }
   // 路由守卫从这里开始
   push(location, onComplete, onAbort) {
     if (!onComplete && !onAbort && typeof Promise !== 'undefined') {
@@ -137,6 +153,66 @@ export default class VueRouter {
       this.history.replace(location, onComplete, onAbort)
     }
   }
+  go(n) {
+    this.history.go(n)
+  }
+
+  back() {
+    this.go(-1)
+  }
+
+  forward() {
+    this.go(1)
+  }
+
+  getMatchedComponents(to) {
+    const route = to
+      ? to.matched
+        ? to
+        : this.resolve(to).route
+      : this.currentRoute
+    if (!route) {
+      return []
+    }
+    return [].concat.apply([], route.matched.map(m => {
+      return Object.keys(m.components).map(key => {
+        return m.components[key]
+      })
+    }))
+  }
+  //router-link 组件中用到，获取location-->push-->transitionTo
+  resolve(
+    to,
+    current,
+    append
+  ) {
+    current = current || this.history.current
+    const location = normalizeLocation(
+      to,
+      current,
+      append,
+      this
+    )
+    const route = this.match(location, current)
+    const fullPath = route.redirectedFrom || route.fullPath
+    const base = this.history.base
+    const href = createHref(base, fullPath, this.mode)
+    return {
+      location,
+      route,
+      href,
+      // for backwards compat
+      normalizedTo: location,
+      resolved: route
+    }
+  }
+
+  addRoutes(routes) {
+    this.matcher.addRoutes(routes)
+    if (this.history.current !== START) {
+      this.history.transitionTo(this.history.getCurrentLocation())
+    }
+  }
 }
 //
 function registerHook(list, fn) {
@@ -145,6 +221,11 @@ function registerHook(list, fn) {
     const i = list.indexOf(fn)
     if (i > -1) list.splice(i, 1)
   }
+}
+//
+function createHref(base, fullPath, mode) {
+  var path = mode === 'hash' ? '#' + fullPath : fullPath
+  return base ? cleanPath(base + '/' + path) : path
 }
 //
 VueRouter.install = install

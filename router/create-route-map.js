@@ -4,11 +4,14 @@ import { cleanPath } from './util/path'
 import { assert, warn } from './util/warn'
 
 export function createRouteMap(
-  routes
+  routes,
+  oldPathList,
+  oldPathMap,
+  oldNameMap
 ) {
-  const pathList = []
-  const pathMap = Object.create(null)
-  const nameMap = Object.create(null)
+  const pathList = oldPathList || []
+  const pathMap = oldPathMap || Object.create(null)
+  const nameMap = oldNameMap || Object.create(null)
 
   routes.forEach(route => {
     addRouteRecord(pathList, pathMap, nameMap, route)
