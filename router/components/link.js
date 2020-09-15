@@ -21,18 +21,17 @@ export default {
     }
   },
   render(h) {
-    // const router = this.$router
-    // const current = this.$route
-    // const { location } = router.resolve(
-    //   this.to,
-    //   current,
-    //   this.append
-    // )
+    const router = this.$router
+    const current = this.$route
+    const { location } = router.resolve(
+      this.to,
+      current
+    )
 
     const data = {
       on: {
         click: () => {
-          //router.push(location)
+          router.push(location)
         }
       }
     }

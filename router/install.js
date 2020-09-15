@@ -21,8 +21,7 @@ export function install(Vue) {
         //这里需要初始化，设置当前路由route的信息，初始化方法放在了this._router(new VueRouter)上
         //因为当前路由current放在了this._router.history
         this._router.init(this) // this根实例
-        this._route = this._router.history.current
-        // Vue.util.defineReactive(this, '_route', this._router.history.current)
+        Vue.util.defineReactive(this, '_route', this._router.history.current)
       } else {//其他子实例
         this._routerRoot = (this.$parent && this.$parent._routerRoot) || this
       }
@@ -42,9 +41,12 @@ export function install(Vue) {
       return this._routerRoot._route
     }
   })
-
-
   //注册全局组件
   Vue.component('RouterView', View)
   Vue.component('RouterLink', Link)
+
+  //这里是定义了，在组件中mixin和vue.extend 相关hooks时候的合并策略，同created一样
+  const strats = Vue.config.optionMergeStrategies
+  // use the same hook merging strategy for route hooks
+  strats.beforeRouteEnter = strats.beforeRouteLeave = strats.beforeRouteUpdate = strats.created
 }

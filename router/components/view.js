@@ -1,4 +1,3 @@
-
 export default {
   name: 'RouterView',
   functional: true, // vue的函数式组件
@@ -9,13 +8,11 @@ export default {
     },
   },
   render(_, { props, children, parent, data }) {
-
     //
     const h = parent.$createElement
     const name = props.name
-    const route = parent.$route
-    console.log('RouteView组件', route);
-    const matched = route.matched[0]
+    const route = parent.$route //组件依赖了$route
+    const matched = route.matched
     const component = matched && matched.components[name]
     if (!matched || !component) {
       return h()

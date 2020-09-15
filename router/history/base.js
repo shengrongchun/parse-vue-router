@@ -1,6 +1,6 @@
 
 import { inBrowser } from '../util/dom'
-//import { START } from '../util/route'
+import { START } from '../util/route'
 
 export class History {
   constructor(router, base) {
@@ -9,29 +9,25 @@ export class History {
     //基本路径
     this.base = normalizeBase(base)
     //当前路由
-    this.current = {}
+    this.current = START
+  }
+  //
+  listen(cb) {
+    this.cb = cb
   }
   //创建匹配的路由，然后改变当前路由
-  transitionTo() {
+  transitionTo(location) {
     //新匹配创建的route
-    const route = this.router.match()
+    const route = this.router.match(location, this.current)
     this.updateRoute(route)
   }
   //改变当前路由
   updateRoute(route) {
     this.current = route
+    this.cb && this.cb(route) // 去改变 实例的_route
   }
 
 }
-
-export function getLocation(base) {
-  let path = decodeURI(window.location.pathname)
-  if (base && path.toLowerCase().indexOf(base.toLowerCase()) === 0) {
-    path = path.slice(base.length)
-  }
-  return (path || '/') + window.location.search + window.location.hash
-}
-
 //标准化base
 function normalizeBase(base) {
   if (!base) {//没有base
