@@ -7,9 +7,9 @@
       <!-- <router-link> 默认会被渲染成一个 `<a>` 标签 -->
       <router-link to="/?name=123#hash=true">Go to Home</router-link>
       <br />
-      <router-link :to="{name: 'Foo', params: {params:true},query: {query: true}}">Go to Foo</router-link>
+      <router-link :to="{path: '/foo', params: {},query: {query: true}}">Go to Foo</router-link>
       <br />
-      <router-link :to="{path: '/bar', params: {params:true},query: {query: true}}">Go to Bar</router-link>
+      <router-link :to="{path: '/foo/bar', params: {},query: {query: true}}">Go to Bar</router-link>
     </p>
     <!-- 路由匹配到的组件将渲染在这里 -->
     <div style="background: #eee">

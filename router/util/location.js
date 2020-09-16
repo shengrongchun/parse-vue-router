@@ -1,5 +1,7 @@
 import { parsePath, resolvePath } from './path'
 import { resolveQuery } from './query'
+import { fillParams } from './params'
+import { warn } from './warn'
 import { extend } from './misc'
 
 // raw的可能性
@@ -23,6 +25,27 @@ export function normalizeLocation(
     const params = next.params
     if (params && typeof params === 'object') {
       next.params = extend({}, params)
+    }
+    return next
+  }
+
+  // relative params 
+  //当 push 的location没有path,同时有params和当前路由，会把params追加到当前路由
+  if (!next.path && next.params && current) {
+    next = extend({}, next)
+    next._normalized = true
+    const params = extend(extend({}, current.params), next.params)
+    if (current.name) {
+      next.name = current.name
+      next.params = params
+    } else if (current.matched.length) {
+      //寻找最后一个子路由的path(这里可能你还不理解，等到讲到嵌套路由的时候就明白了)
+      const rawPath = current.matched[current.matched.length - 1].path
+      // 把params填充到path，如record.path: /a/:username/:userid; params: {username:vue,userid:router};
+      // 那么最终的path: /a/vue/router
+      next.path = fillParams(rawPath, params, `path ${current.path}`)
+    } else if (process.env.NODE_ENV !== 'production') {
+      warn(false, `relative params navigation requires a current route.`)
     }
     return next
   }
