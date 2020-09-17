@@ -28,8 +28,8 @@ export function createRoute(
     params: location.params || {},
     //包含查询参数和 hash 的完整路径
     fullPath: getFullPath(location, stringifyQuery),//getFullPath方法在下面有定义
-    //当前路由匹配的组件
-    matched: { components: record ? record.components : {} }
+    //一个数组，包含当前路由的所有嵌套路径片段的路由记录
+    matched: record ? formatMatch(record) : []
   }
   //
   return Object.freeze(route)//冻结对象，不让其修改
@@ -51,6 +51,16 @@ function clone(value) {//递归克隆
   } else {
     return value
   }
+}
+//嵌套路由视图
+// [父, 子, 子的子……]
+function formatMatch(record) {
+  const res = []
+  while (record) {
+    res.unshift(record)
+    record = record.parent
+  }
+  return res
 }
 //获取完整路径包括：path query hash
 function getFullPath(

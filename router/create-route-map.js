@@ -46,6 +46,7 @@ function addRouteRecord(
   pathMap,
   nameMap,
   route,
+  parent,
 ) {
   const { path, name } = route
   if (process.env.NODE_ENV !== 'production') {//非生产环境警告，配置信息path是必须的
@@ -61,7 +62,7 @@ function addRouteRecord(
   const pathToRegexpOptions = //正则配置 options
     route.pathToRegexpOptions || {}
   //标准化path
-  const normalizedPath = normalizePath(path, null, pathToRegexpOptions.strict)
+  const normalizedPath = normalizePath(path, parent, pathToRegexpOptions.strict)
   if (typeof route.caseSensitive === 'boolean') {// 正则匹配规则是否大小写敏感？(默认值：false)
     pathToRegexpOptions.sensitive = route.caseSensitive
   }
@@ -70,7 +71,14 @@ function addRouteRecord(
     regex: compileRouteRegex(normalizedPath, pathToRegexpOptions),
     components: route.components || { default: route.component },
     name,
+    parent,
     meta: route.meta || {},
+  }
+  // **嵌套路由**
+  if (route.children) {
+    route.children.forEach(child => {//这里当前的record就是下一层的parent
+      addRouteRecord(pathList, pathMap, nameMap, child, record)
+    })
   }
   //去掉重复的path定义
   if (!pathMap[record.path]) {

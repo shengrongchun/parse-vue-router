@@ -1,5 +1,9 @@
 <template>
-  <div>Home……</div>
+  <div>Home……
+    <div style="background: green">
+      <router-view />
+    </div>
+  </div>
 </template>
 <script>
 export default {
