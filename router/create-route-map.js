@@ -73,6 +73,12 @@ function addRouteRecord(
     name,
     parent,
     meta: route.meta || {},
+    props: //路由组件传参 有了这个功能，组件可以不再和$route耦合
+      route.props == null
+        ? {}
+        : route.components
+          ? route.props
+          : { default: route.props } //非多组件的情况下，就是对默认组件的设置
   }
   // **嵌套路由**
   if (route.children) {

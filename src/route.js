@@ -7,15 +7,18 @@ export default {
   routes: [
     {
       path: '/', name: 'Home', component: Home,
-      children: [{
-        path: 'foo', component: Foo,
-        children: [{
-          path: 'bar', component: Bar
-        }]
-      }]
+      props: true
     },
-    // { path: '/:foo', name: 'Foo', component: Foo },
-    // { path: '/:foo/:bar', name: 'Bar', component: Bar },
+    {
+      path: '/foo', name: 'Foo', component: Foo,
+      props: { name: '对象类型' }
+    },
+    {
+      path: '/bar', name: 'Bar', component: Bar,
+      props: (route) => {
+        return { name: route.query.name }
+      }
+    },
 
   ]
 }

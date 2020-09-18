@@ -1,3 +1,6 @@
+import { warn } from '../util/warn'
+import { extend } from '../util/misc'
+
 export default {
   name: 'RouterView',
   functional: true, // vue的函数式组件
@@ -31,6 +34,52 @@ export default {
     if (!matched || !component) {
       return h()
     }
+    // 从record中获取此组件name的props
+    const configProps = matched.props && matched.props[name]
+    // save route and configProps in cache
+    if (configProps) {//把props信息注入到组件的props中
+      fillPropsinData(component, data, route, configProps)
+    }
     return h(component, data, children)
+  }
+}
+
+function fillPropsinData(component, data, route, configProps) {
+  // data.props在组件render过程中，会给相同key的component.props赋值
+  // 如：data.props = {name:111},组件的props如果定义了name,name的值会赋值为111
+  let propsToPass = data.props = resolveProps(route, configProps)
+  console.log('propsToPass', propsToPass)
+  if (propsToPass) {
+    // clone to prevent mutation
+    propsToPass = data.props = extend({}, propsToPass)
+    // props传的值没有在组件中的props里定义，就降级存储在attrs中
+    const attrs = data.attrs = data.attrs || {}
+    for (const key in propsToPass) {
+      if (!component.props || !(key in component.props)) {
+        attrs[key] = propsToPass[key]
+        delete propsToPass[key]
+      }
+    }
+  }
+}
+
+function resolveProps(route, config) {//三种类型的判断（布尔，对象，函数）
+  switch (typeof config) {
+    case 'undefined':
+      return
+    case 'object':
+      return config
+    case 'function':
+      return config(route) // 函数的参数传的是当前的route
+    case 'boolean':
+      return config ? route.params : undefined  // 比如 params: {a:1,b:2} --> 在组件的props: {a:1,b:2}
+    default:
+      if (process.env.NODE_ENV !== 'production') {
+        warn(
+          false,
+          `props in "${route.path}" is a ${typeof config}, ` +
+          `expecting an object, function or boolean.`
+        )
+      }
   }
 }
