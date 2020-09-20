@@ -72,6 +72,7 @@ function addRouteRecord(
     components: route.components || { default: route.component },
     name,
     parent,
+    redirect: route.redirect, // 有重定向参数
     meta: route.meta || {},
     props: //路由组件传参 有了这个功能，组件可以不再和$route耦合
       route.props == null

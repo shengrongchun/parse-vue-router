@@ -1,5 +1,6 @@
 /* eslint-disable no-prototype-builtins */
-import { warn } from './util/warn'
+import { resolvePath } from './util/path'
+import { assert, warn } from './util/warn'
 import { createRoute } from './util/route'
 import { fillParams } from './util/params'
 import { normalizeLocation } from './util/location'
@@ -16,7 +17,8 @@ export function createMatcher(
   console.log('nameMap', nameMap)
   function match(
     raw,
-    currentRoute
+    currentRoute,
+    redirectedFrom
   ) {
     const location = normalizeLocation(raw, currentRoute, false, router)
     const { name } = location
@@ -45,7 +47,7 @@ export function createMatcher(
       // 把params填充到path，如record.path: /a/:username/:userid; params: {username:vue,userid:router};
       //那么最终的path: /a/vue/router
       location.path = fillParams(record.path, location.params, `named route "${name}"`)
-      return _createRoute(record, location)
+      return _createRoute(record, location, redirectedFrom)
     } else if (location.path) {
       location.params = {} // 这句代码，让在有path的时候无视了params
       // 动态路由这里需要改造 直接的pathMap[location.path]是获取不到 record的
@@ -57,19 +59,89 @@ export function createMatcher(
         const path = pathList[i]
         const record = pathMap[path]
         if (matchRoute(record.regex, location.path, location.params)) {
-          return _createRoute(record, location)
+          return _createRoute(record, location, redirectedFrom)
         }
       }
     }
     // no match
-    return _createRoute(null, location)
+    return _createRoute(null, location, redirectedFrom)
+  }
+  //重定向方法
+  function redirect(
+    record,
+    location
+  ) {
+    const originalRedirect = record.redirect//参数会有三种类型
+    let redirect = typeof originalRedirect === 'function'//函数
+      ? originalRedirect(createRoute(record, location, null, router)) // createRoute(record, location, null, router)--> to
+      : originalRedirect
+
+    if (typeof redirect === 'string') {//字符串
+      redirect = { path: redirect }
+    }
+
+    if (!redirect || typeof redirect !== 'object') {//非三种类型警告
+      if (process.env.NODE_ENV !== 'production') {
+        warn(
+          false, `invalid redirect option: ${JSON.stringify(redirect)}`
+        )
+      }
+      return _createRoute(null, location)
+    }
+
+    const re = redirect
+    const { name, path } = re//解析 name path
+    let { query, hash, params } = location
+    // 如果重定向路由没有 query hash params。就把原跳转路由上的相关加入
+    // eslint-disable-next-line no-prototype-builtins
+    query = re.hasOwnProperty('query') ? re.query : query
+    // eslint-disable-next-line no-prototype-builtins
+    hash = re.hasOwnProperty('hash') ? re.hash : hash
+    // eslint-disable-next-line no-prototype-builtins
+    params = re.hasOwnProperty('params') ? re.params : params
+
+    if (name) {
+      // resolved named direct
+      const targetRecord = nameMap[name]
+      if (process.env.NODE_ENV !== 'production') {
+        assert(targetRecord, `redirect failed: named route "${name}" not found.`)
+      }
+      return match({//因为是重定向，所以原跳转路由
+        _normalized: true,
+        name,
+        query,
+        hash,
+        params
+      }, undefined, location)
+    } else if (path) {
+      // 1. resolve relative redirect 解析相对跳转path
+      const rawPath = resolveRecordPath(path, record)
+      // 2. resolve params 再追加上params
+      const resolvedPath = fillParams(rawPath, params, `redirect route with path "${rawPath}"`)
+      // 3. rematch with existing query and hash
+      return match({
+        _normalized: true,
+        path: resolvedPath,
+        query,
+        hash
+      }, undefined, location)
+    } else {
+      if (process.env.NODE_ENV !== 'production') {
+        warn(false, `invalid redirect option: ${JSON.stringify(redirect)}`)
+      }
+      return _createRoute(null, location)
+    }
   }
   //
   function _createRoute(
     record,
     location,
+    redirectedFrom
   ) {
-    return createRoute(record, location)
+    if (record && record.redirect) { // 如果有重定向
+      return redirect(record, redirectedFrom || location)
+    }
+    return createRoute(record, location, redirectedFrom)
   }
   //
   return {
@@ -123,4 +195,8 @@ function matchRoute(
     }
   }
   return true
+}
+
+function resolveRecordPath(path, record) {
+  return resolvePath(path, record.parent ? record.parent.path : '/', true)
 }
