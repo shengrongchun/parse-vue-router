@@ -133,6 +133,25 @@ export function createMatcher(
     }
   }
   //
+  function alias(
+    record,
+    location,
+    matchAs
+  ) {
+    const aliasedPath = fillParams(matchAs, location.params, `aliased route with path "${matchAs}"`)
+    const aliasedMatch = match({
+      _normalized: true,
+      path: aliasedPath
+    })
+    if (aliasedMatch) {
+      const matched = aliasedMatch.matched
+      const aliasedRecord = matched[matched.length - 1]
+      location.params = aliasedMatch.params
+      return _createRoute(aliasedRecord, location)
+    }
+    return _createRoute(null, location)
+  }
+  //
   function _createRoute(
     record,
     location,
@@ -140,6 +159,11 @@ export function createMatcher(
   ) {
     if (record && record.redirect) { // 如果有重定向
       return redirect(record, redirectedFrom || location)
+    }
+    // 比如 record.matchAs: '/a' record.path: '/b'
+    //那么配置信息应该是这样的：{path: '/a', alias: '/b'}
+    if (record && record.matchAs) {
+      return alias(record, location, record.matchAs)
     }
     return createRoute(record, location, redirectedFrom)
   }

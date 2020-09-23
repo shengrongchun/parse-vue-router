@@ -14,7 +14,7 @@ export default {
       props: { name: '对象类型' }
     },
     {
-      path: '/bar', name: 'Bar', component: Bar,
+      path: '/bar', name: 'Bar', component: Bar, alias: '/alias-bar',
       props: (route) => {
         return { name: route.query.name }
       }

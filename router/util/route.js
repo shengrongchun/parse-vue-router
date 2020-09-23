@@ -2,7 +2,7 @@ import { stringifyQuery } from './query'
 export function createRoute(
   record,
   location,
-  redirectedFrom,//目前没用到先不看
+  redirectedFrom,
   router //vueRouter 实例对象
 ) {
   // 怎么字符串化 query 可以在用户路由配置数据中自定义
@@ -30,6 +30,9 @@ export function createRoute(
     fullPath: getFullPath(location, stringifyQuery),//getFullPath方法在下面有定义
     //一个数组，包含当前路由的所有嵌套路径片段的路由记录
     matched: record ? formatMatch(record) : []
+  }
+  if (redirectedFrom) {
+    route.redirectedFrom = getFullPath(redirectedFrom, stringifyQuery)
   }
   //
   return Object.freeze(route)//冻结对象，不让其修改
