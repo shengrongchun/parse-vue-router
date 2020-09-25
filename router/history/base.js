@@ -16,9 +16,17 @@ export class History {
     this.cb = cb
   }
   //创建匹配的路由，然后改变当前路由
-  transitionTo(location) {
+  transitionTo(location, onComplete, onAbort) {
     //新匹配创建的route
-    const route = this.router.match(location, this.current)
+    let route
+    try {
+      route = this.router.match(location, this.current)
+      onComplete && onComplete(route)
+    } catch (e) {
+      onAbort && onAbort(e)
+      // Exception should still be thrown
+      throw e
+    }
     this.updateRoute(route)
   }
   //改变当前路由

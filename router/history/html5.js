@@ -1,5 +1,7 @@
 
 import { History } from './base'
+import { cleanPath } from '../util/path'
+import { pushState, replaceState } from '../util/push-state'
 
 export class HTML5History extends History {
 
@@ -8,8 +10,21 @@ export class HTML5History extends History {
     this._startLocation = getLocation(this.base)
   }
 
-  push(location) {
-    this.transitionTo(location)
+  push(location, onComplete, onAbort) {
+    const Complete = (route) => {
+      //不刷新更改浏览器url 并且增加一条记录，浏览器可以回退
+      pushState(cleanPath(this.base + route.fullPath))
+      onComplete && onComplete(route)
+    }
+    this.transitionTo(location, Complete, onAbort)
+  }
+  replace(location, onComplete, onAbort) {
+    const Complete = (route) => {
+      //不刷新更改浏览器url 并且刷新记录
+      replaceState(cleanPath(this.base + route.fullPath))
+      onComplete && onComplete(route)
+    }
+    this.transitionTo(location, Complete, onAbort)
   }
 
   getCurrentLocation() {

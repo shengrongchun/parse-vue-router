@@ -43,8 +43,24 @@ export default class VueRouter {
     })
   }
   //
-  push(location) {
-    this.history.push(location)
+  push(location, onComplete, onAbort) {
+    if (!onComplete && !onAbort && typeof Promise !== 'undefined') {
+      return new Promise((resolve, reject) => {
+        this.history.push(location, resolve, reject)
+      })
+    } else {
+      this.history.push(location, onComplete, onAbort)
+    }
+  }
+  //
+  replace(location, onComplete, onAbort) {
+    if (!onComplete && !onAbort && typeof Promise !== 'undefined') {
+      return new Promise((resolve, reject) => {
+        this.history.replace(location, resolve, reject)
+      })
+    } else {
+      this.history.replace(location, onComplete, onAbort)
+    }
   }
   //router-link 组件中用到，获取location-->push-->transitionTo
   resolve(

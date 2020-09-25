@@ -1,9 +1,5 @@
 <template>
-  <div>Foo……props传来了: ( {{name}} )
-    <div style="background: yellow">
-      <router-view />
-    </div>
-  </div>
+  <div>Foo……</div>
 </template>
 <script>
 export default {
