@@ -10,6 +10,8 @@ export class History {
     this.base = normalizeBase(base)
     //当前路由
     this.current = START
+    //存储一些监听事件
+    this.listeners = []
   }
   //
   listen(cb) {
@@ -33,6 +35,17 @@ export class History {
   updateRoute(route) {
     this.current = route
     this.cb && this.cb(route) // 去改变 实例的_route
+  }
+  //
+  setupListeners() {
+    // Default implementation is empty
+  }
+
+  teardownListeners() {
+    this.listeners.forEach(cleanupListener => {
+      cleanupListener()
+    })
+    this.listeners = []
   }
 
 }

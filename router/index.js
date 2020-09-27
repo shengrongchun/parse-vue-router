@@ -33,7 +33,10 @@ export default class VueRouter {
     // 
     const history = this.history
     //初始化时候去匹配更改当前路由
-    history.transitionTo(history.getCurrentLocation())
+    const onCompleteOrAbort = () => {
+      history.setupListeners()
+    } //路由跳转成功或者失败我们可能需要执行的函数
+    history.transitionTo(history.getCurrentLocation(), onCompleteOrAbort, onCompleteOrAbort)
     //
     history.listen(route => {
       this.apps.forEach((app) => {

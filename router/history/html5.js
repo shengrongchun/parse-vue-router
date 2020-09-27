@@ -1,6 +1,7 @@
 
 import { History } from './base'
 import { cleanPath } from '../util/path'
+import { START } from '../util/route'
 import { pushState, replaceState } from '../util/push-state'
 
 export class HTML5History extends History {
@@ -8,6 +9,26 @@ export class HTML5History extends History {
   constructor(router, base) {
     super(router, base)
     this._startLocation = getLocation(this.base)
+  }
+  //
+  setupListeners() {//
+    if (this.listeners.length > 0) {
+      return
+    }
+
+    const handleRoutingEvent = () => {
+      // Avoiding first `popstate` event dispatched in some browsers but first
+      // history route not updated since async guard at the same time.
+      const location = getLocation(this.base)
+      if (this.current === START && location === this._startLocation) {
+        return
+      }
+      this.transitionTo(location, () => { })
+    }
+    window.addEventListener('popstate', handleRoutingEvent)
+    this.listeners.push(() => {
+      window.removeEventListener('popstate', handleRoutingEvent)
+    })
   }
 
   push(location, onComplete, onAbort) {
