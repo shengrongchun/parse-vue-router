@@ -3,6 +3,8 @@ import { install } from './install'
 import { assert } from './util/warn'
 import { createMatcher } from './create-matcher'
 import { normalizeLocation } from './util/location'
+import { supportsPushState } from './util/push-state'
+import { handleScroll } from './util/scroll'
 
 import { HTML5History } from './history/html5'
 
@@ -33,8 +35,18 @@ export default class VueRouter {
     // 
     const history = this.history
     //初始化时候去匹配更改当前路由
-    const onCompleteOrAbort = () => {
+    const handleInitialScroll = (routeOrError) => {//滚动行为
+      const from = history.current
+      const expectScroll = this.options.scrollBehavior
+      const supportsScroll = supportsPushState && expectScroll
+
+      if (supportsScroll && 'fullPath' in routeOrError) {
+        handleScroll(this, routeOrError, from, false)
+      }
+    }
+    const onCompleteOrAbort = (routeOrError) => {
       history.setupListeners()
+      handleInitialScroll(routeOrError)
     } //路由跳转成功或者失败我们可能需要执行的函数
     history.transitionTo(history.getCurrentLocation(), onCompleteOrAbort, onCompleteOrAbort)
     //

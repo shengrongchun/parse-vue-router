@@ -1,5 +1,5 @@
 <template>
-  <div>Home……</div>
+  <div class="scroll">Home……</div>
 </template>
 <script>
 export default {

@@ -2,7 +2,8 @@
 import { History } from './base'
 import { cleanPath } from '../util/path'
 import { START } from '../util/route'
-import { pushState, replaceState } from '../util/push-state'
+import { setupScroll, handleScroll } from '../util/scroll'
+import { pushState, replaceState, supportsPushState } from '../util/push-state'
 
 export class HTML5History extends History {
 
@@ -15,15 +16,27 @@ export class HTML5History extends History {
     if (this.listeners.length > 0) {
       return
     }
+    //
+    const router = this.router
+    const expectScroll = router.options.scrollBehavior
+    const supportsScroll = supportsPushState && expectScroll
 
+    if (supportsScroll) {
+      this.listeners.push(setupScroll())
+    }
     const handleRoutingEvent = () => {
+      const current = this.current
       // Avoiding first `popstate` event dispatched in some browsers but first
       // history route not updated since async guard at the same time.
       const location = getLocation(this.base)
       if (this.current === START && location === this._startLocation) {
         return
       }
-      this.transitionTo(location, () => { })
+      this.transitionTo(location, route => {
+        if (supportsScroll) {
+          handleScroll(router, route, current, true)
+        }
+      })
     }
     window.addEventListener('popstate', handleRoutingEvent)
     this.listeners.push(() => {
@@ -32,17 +45,21 @@ export class HTML5History extends History {
   }
 
   push(location, onComplete, onAbort) {
+    const { current: fromRoute } = this
     const Complete = (route) => {
       //不刷新更改浏览器url 并且增加一条记录，浏览器可以回退
       pushState(cleanPath(this.base + route.fullPath))
+      handleScroll(this.router, route, fromRoute, false) //滚动行为
       onComplete && onComplete(route)
     }
     this.transitionTo(location, Complete, onAbort)
   }
   replace(location, onComplete, onAbort) {
+    const { current: fromRoute } = this
     const Complete = (route) => {
       //不刷新更改浏览器url 并且刷新记录
       replaceState(cleanPath(this.base + route.fullPath))
+      handleScroll(this.router, route, fromRoute, false) //滚动行为
       onComplete && onComplete(route)
     }
     this.transitionTo(location, Complete, onAbort)
