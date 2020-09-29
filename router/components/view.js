@@ -64,7 +64,34 @@ export default {
     }
     // cache component 设置缓存
     cache[name] = { component }
+    // attach instance registration hook
+    // this will be called in the instance's injected lifecycle hooks
+    data.registerRouteInstance = (vm, val) => {
+      // val could be undefined for unregistration
+      const current = matched.instances[name]
+      if (
+        (val && current !== vm) ||
+        (!val && current === vm)
+      ) {
+        matched.instances[name] = val
+      }
+    }
+      // also register instance in prepatch hook
+      // in case the same component instance is reused across different routes
+      ; (data.hook || (data.hook = {})).prepatch = (_, vnode) => {
+        matched.instances[name] = vnode.componentInstance
+      }
 
+    // register instance in init hook
+    // in case kept-alive component be actived when routes changed
+    data.hook.init = (vnode) => {
+      if (vnode.data.keepAlive &&
+        vnode.componentInstance &&
+        vnode.componentInstance !== matched.instances[name]
+      ) {
+        matched.instances[name] = vnode.componentInstance
+      }
+    }
     // 从record中获取此组件name的props
     const configProps = matched.props && matched.props[name]
     // save route and configProps in cache

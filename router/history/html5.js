@@ -64,7 +64,14 @@ export class HTML5History extends History {
     }
     this.transitionTo(location, Complete, onAbort)
   }
-
+  //
+  ensureURL(push) { //确保当前路由的path和url保持一致
+    if (getLocation(this.base) !== this.current.fullPath) {
+      const current = cleanPath(this.base + this.current.fullPath)
+      push ? pushState(current) : replaceState(current)
+    }
+  }
+  //
   getCurrentLocation() {
     return getLocation(this.base)
   }

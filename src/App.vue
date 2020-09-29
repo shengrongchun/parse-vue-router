@@ -11,7 +11,7 @@
       <br />
       <router-link :to="{path: '/bar'}">Go to Bar</router-link>
       <br />
-    <ul>
+      <!-- <ul>
       <li>
         <router-link to="/bar#anchor">/bar#anchor</router-link>
       </li>
@@ -21,7 +21,7 @@
       <li>
         <router-link to="/bar#1number">/bar#1number</router-link>
       </li>
-    </ul>
+    </ul> -->
     </p>
     <!-- 路由匹配到的组件将渲染在这里 -->
     <div style="background: #eee">
@@ -51,9 +51,9 @@ export default {
 .fade-leave-active {
   opacity: 0;
 }
-.view {
+/* .view {
   border: 1px solid red;
   height: 4500px;
   position: relative;
-}
+} */
 </style>

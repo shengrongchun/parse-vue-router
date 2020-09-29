@@ -3,7 +3,6 @@ import Bar from './components/Bar'
 import Home from './components/Home'
 
 const scrollBehavior = function (to, from, savedPosition) {
-  console.log('nnn', savedPosition)
   if (savedPosition) {
     // savedPosition is only available for popstate navigations.
     return savedPosition
@@ -58,7 +57,12 @@ export default {
     },
     {
       path: '/foo', name: 'Foo', component: Foo,
-      props: { name: '对象类型' }
+      props: { name: '对象类型' },
+      beforeEnter: (to, from, next) => {
+        // ...
+        console.log('路由配置 /foo beforeEnter')
+        next()
+      }
     },
     {
       path: '/bar', name: 'Bar', component: Bar, alias: '/alias-bar',

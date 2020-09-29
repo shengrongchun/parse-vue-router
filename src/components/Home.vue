@@ -9,6 +9,10 @@ export default {
       default: null
     }
   },
+  beforeRouteEnter(to, from, next) {
+    console.log('home beforeRouterEnter')
+    next()
+  },
   created() {
     console.log('$route', this.$route)
   }
