@@ -1,6 +1,7 @@
 import { inBrowser } from './util/dom'
 import { install } from './install'
 import { assert } from './util/warn'
+import { cleanPath } from './util/path'
 import { createMatcher } from './create-matcher'
 import { normalizeLocation } from './util/location'
 import { supportsPushState } from './util/push-state'
@@ -100,15 +101,27 @@ export default class VueRouter {
   //router-link 组件中用到，获取location-->push-->transitionTo
   resolve(
     to,
-    current
+    current,
+    append
   ) {
     current = current || this.history.current
     const location = normalizeLocation(
       to,
-      current
+      current,
+      append,
+      this
     )
+    const route = this.match(location, current)
+    const fullPath = route.redirectedFrom || route.fullPath
+    const base = this.history.base
+    const href = createHref(base, fullPath, this.mode)
     return {
-      location
+      location,
+      route,
+      href,
+      // for backwards compat
+      normalizedTo: location,
+      resolved: route
     }
   }
 }
@@ -119,6 +132,11 @@ function registerHook(list, fn) {
     const i = list.indexOf(fn)
     if (i > -1) list.splice(i, 1)
   }
+}
+//
+function createHref(base, fullPath, mode) {
+  var path = mode === 'hash' ? '#' + fullPath : fullPath
+  return base ? cleanPath(base + '/' + path) : path
 }
 //
 VueRouter.install = install
