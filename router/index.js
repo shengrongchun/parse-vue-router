@@ -7,7 +7,9 @@ import { normalizeLocation } from './util/location'
 import { supportsPushState } from './util/push-state'
 import { handleScroll } from './util/scroll'
 
+import { HashHistory } from './history/hash'
 import { HTML5History } from './history/html5'
+import { AbstractHistory } from './history/abstract'
 
 // 这里的this --> $router
 export default class VueRouter {
@@ -21,8 +23,32 @@ export default class VueRouter {
     this.afterHooks = [] //存放全局路由后置钩子函数数组
     // 根据路径匹配创建 route
     this.matcher = createMatcher(options.routes || [], this)
-    //创建当前路由可以弄一个公共方法，这样路由更改的时候，调用公共创建方法即可
-    this.history = new HTML5History(this, options.base)
+    // this.fallback 表示在浏览器不支持 history.pushState 的情况下，根据传入的 fallback 配置参数，决定是否回退到hash模式
+    let mode = options.mode || 'hash'
+    this.fallback = mode === 'history' && !supportsPushState && options.fallback !== false
+    if (this.fallback) {
+      mode = 'hash'
+    }
+    if (!inBrowser) {//非浏览器环境下
+      mode = 'abstract'
+    }
+    this.mode = mode
+
+    switch (mode) {
+      case 'history':
+        this.history = new HTML5History(this, options.base)
+        break
+      case 'hash':
+        this.history = new HashHistory(this, options.base, this.fallback)
+        break
+      case 'abstract':
+        this.history = new AbstractHistory(this, options.base)
+        break
+      default:
+        if (process.env.NODE_ENV !== 'production') {
+          assert(false, `invalid mode: ${mode}`)
+        }
+    }
   }
   match(location, current) {// 返回匹配的路由
     return this.matcher.match(location, current)
@@ -39,21 +65,23 @@ export default class VueRouter {
     this.app = app
     // 
     const history = this.history
-    //初始化时候去匹配更改当前路由
-    const handleInitialScroll = (routeOrError) => {//滚动行为
-      const from = history.current
-      const expectScroll = this.options.scrollBehavior
-      const supportsScroll = supportsPushState && expectScroll
+    if (history instanceof HTML5History || history instanceof HashHistory) {
+      //初始化时候去匹配更改当前路由
+      const handleInitialScroll = (routeOrError) => {//滚动行为
+        const from = history.current
+        const expectScroll = this.options.scrollBehavior
+        const supportsScroll = supportsPushState && expectScroll
 
-      if (supportsScroll && 'fullPath' in routeOrError) {
-        handleScroll(this, routeOrError, from, false)
+        if (supportsScroll && 'fullPath' in routeOrError) {
+          handleScroll(this, routeOrError, from, false)
+        }
       }
+      const onCompleteOrAbort = (routeOrError) => {
+        history.setupListeners()
+        handleInitialScroll(routeOrError)
+      } //路由跳转成功或者失败我们可能需要执行的函数
+      history.transitionTo(history.getCurrentLocation(), onCompleteOrAbort, onCompleteOrAbort)
     }
-    const onCompleteOrAbort = (routeOrError) => {
-      history.setupListeners()
-      handleInitialScroll(routeOrError)
-    } //路由跳转成功或者失败我们可能需要执行的函数
-    history.transitionTo(history.getCurrentLocation(), onCompleteOrAbort, onCompleteOrAbort)
     //
     history.listen(route => {
       this.apps.forEach((app) => {

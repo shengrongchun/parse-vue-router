@@ -47,7 +47,7 @@ const scrollBehavior = function (to, from, savedPosition) {
   }
 }
 export default {
-  mode: 'history', // history、hash、abstract(Node.js 环境) 默认是hash
+  mode: 'hash', // history、hash、abstract(Node.js 环境) 默认是hash
   scrollBehavior,
   routes: [
     {
