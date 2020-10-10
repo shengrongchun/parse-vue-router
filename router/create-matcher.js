@@ -11,9 +11,9 @@ export function createMatcher(
 ) {
   const { pathList, pathMap, nameMap } = createRouteMap(routes)
   //
-  console.log('pathList', pathList)
-  console.log('pathMap', pathMap)
-  console.log('nameMap', nameMap)
+  // console.log('pathList', pathList)
+  // console.log('pathMap', pathMap)
+  // console.log('nameMap', nameMap)
   function match(
     raw,
     currentRoute

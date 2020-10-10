@@ -13,7 +13,10 @@
     </p>
     <!-- 路由匹配到的组件将渲染在这里 -->
     <div style="background: #eee">
-      <router-view></router-view>
+      <keep-alive>
+        <router-view></router-view>
+      </keep-alive>
+      <!-- <router-view></router-view> -->
     </div>
   </div>
 </template>

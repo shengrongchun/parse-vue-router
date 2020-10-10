@@ -1,8 +1,5 @@
 <template>
-  <div>Home……。props传来了: ( {{name}} )
-    <div style="background: green">
-      <router-view />
-    </div>
+  <div>Home……
   </div>
 </template>
 <script>

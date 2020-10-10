@@ -1,5 +1,5 @@
 <template>
-  <div>Bar……props传来了: ( {{name}} )</div>
+  <div>Bar</div>
 </template>
 <script>
 export default {
