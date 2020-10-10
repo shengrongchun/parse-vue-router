@@ -44,6 +44,10 @@ export class HTML5History extends History {
     })
   }
 
+  go(n) {
+    window.history.go(n)
+  }
+
   push(location, onComplete, onAbort) {
     const { current: fromRoute } = this
     const Complete = (route) => {

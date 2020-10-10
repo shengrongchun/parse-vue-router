@@ -1,5 +1,6 @@
 import { inBrowser } from './util/dom'
 import { install } from './install'
+import { START } from './util/route'
 import { assert } from './util/warn'
 import { cleanPath } from './util/path'
 import { createMatcher } from './create-matcher'
@@ -53,6 +54,11 @@ export default class VueRouter {
   match(location, current) {// 返回匹配的路由
     return this.matcher.match(location, current)
   }
+
+  get currentRoute() {// 获取当前路由
+    return this.history && this.history.current
+  }
+
   //初始化方法目的有两个1：创建当前路由route 2：app._route = route
   init(app) {// app根实例
     process.env.NODE_ENV !== 'production' && assert(
@@ -61,6 +67,22 @@ export default class VueRouter {
       `before creating root instance.`
     )
     this.apps.push(app)
+    // set up app destroyed handler
+    // https://github.com/vuejs/vue-router/issues/2639
+    app.$once('hook:destroyed', () => {
+      // clean out app from this.apps array once destroyed
+      const index = this.apps.indexOf(app)
+      if (index > -1) this.apps.splice(index, 1)
+      // ensure we still have a main app or null if no apps
+      // we do not release the router so it can be reused
+      if (this.app === app) this.app = this.apps[0] || null
+
+      if (!this.app) {
+        // clean up event listeners
+        // https://github.com/vuejs/vue-router/issues/2341
+        this.history.teardownListeners()
+      }
+    })
     if (this.app) return
     this.app = app
     // 
@@ -126,6 +148,32 @@ export default class VueRouter {
       this.history.replace(location, onComplete, onAbort)
     }
   }
+  go(n) {
+    this.history.go(n)
+  }
+
+  back() {
+    this.go(-1)
+  }
+
+  forward() {
+    this.go(1)
+  }
+  getMatchedComponents(to) {
+    const route = to
+      ? to.matched
+        ? to
+        : this.resolve(to).route
+      : this.currentRoute
+    if (!route) {
+      return []
+    }
+    return [].concat.apply([], route.matched.map(m => {
+      return Object.keys(m.components).map(key => {
+        return m.components[key]
+      })
+    }))
+  }
   //router-link 组件中用到，获取location-->push-->transitionTo
   resolve(
     to,
@@ -150,6 +198,13 @@ export default class VueRouter {
       // for backwards compat
       normalizedTo: location,
       resolved: route
+    }
+  }
+  //
+  addRoutes(routes) {
+    this.matcher.addRoutes(routes)
+    if (this.history.current !== START) {
+      this.history.transitionTo(this.history.getCurrentLocation())
     }
   }
 }

@@ -34,6 +34,26 @@ export class AbstractHistory extends History {
     )
   }
 
+  go(n) {
+    const targetIndex = this.index + n
+    if (targetIndex < 0 || targetIndex >= this.stack.length) {
+      return
+    }
+    const route = this.stack[targetIndex]
+    this.confirmTransition(
+      route,
+      () => {
+        this.index = targetIndex
+        this.updateRoute(route)
+      },
+      err => {
+        if (isRouterError(err, NavigationFailureType.duplicated)) {
+          this.index = targetIndex
+        }
+      }
+    )
+  }
+
   getCurrentLocation() {
     const current = this.stack[this.stack.length - 1]
     return current ? current.fullPath : '/'

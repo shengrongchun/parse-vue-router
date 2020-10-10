@@ -4,10 +4,13 @@ import { assert, warn } from './util/warn'
 //
 export function createRouteMap(
   routes, //传来的路由配置信息
+  oldPathList,
+  oldPathMap,
+  oldNameMap
 ) {
-  const pathList = [] //创建空数组
-  const pathMap = Object.create(null)//创建空对象
-  const nameMap = Object.create(null)//创建空对象
+  const pathList = oldPathList || [] //创建空数组
+  const pathMap = oldPathMap || Object.create(null)//创建空对象
+  const nameMap = oldNameMap || Object.create(null)//创建空对象
   //遍历 routes 把 route 相关信息放入 pathList, pathMap, nameMap
   routes.forEach(route => {
     addRouteRecord(pathList, pathMap, nameMap, route)

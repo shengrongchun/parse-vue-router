@@ -82,6 +82,10 @@ export class HashHistory extends History {
     )
   }
 
+  go(n) {
+    window.history.go(n)
+  }
+
   ensureURL(push) {
     const current = this.current.fullPath
     if (getHash() !== current) {
